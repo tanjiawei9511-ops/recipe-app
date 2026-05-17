@@ -1,0 +1,3474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家常菜谱·每日推荐</title>
+    <style>
+        :root {--main:#4a90e2;--sub:#ff9800;--bg:#f7f8fa;--card:#fff;--text:#333;--gray:#666;--border:#eee;}
+        .theme-r{--main:#e63946;}
+        .theme-g{--main:#2ecc71;}
+        .theme-p{--main:#9b59b6;}
+        *{margin:0;padding:0;box-sizing:border-box;font-family:微软雅黑,宋体;}
+        body{background:var(--bg);color:var(--text);line-height:1.7;}
+        .head{background:var(--main);color:#fff;padding:16px;text-align:center;position:sticky;top:0;z-index:99;}
+        .head-r{position:absolute;right:16px;top:50%;transform:translateY(-50%);display:flex;gap:10px;}
+        .btn-t{background:rgba(255,255,255,.2);padding:4px 8px;border-radius:4px;font-size:14px;cursor:pointer;}
+        .nav{display:flex;overflow-x:auto;background:var(--card);box-shadow:0 2px 4px #0001;}
+        .nav li{list-style:none;padding:12px 10px;white-space:nowrap;color:var(--gray);cursor:pointer;}
+        .nav li.on{color:var(--main);border-bottom:3px solid var(--main);font-weight:bold;}
+        .tab{display:none;padding:10px;}
+        .tab.show{display:block;}
+        .card{background:var(--card);border-radius:10px;padding:15px;margin:10px;box-shadow:0 2px 4px #0001;}
+        .pic{width:100%;height:160px;border-radius:8px;margin-bottom:10px;object-fit:cover;}
+        .tag{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;}
+        .tag span{padding:4px 10px;background:var(--border);border-radius:20px;font-size:12px;cursor:pointer;}
+        .tag span.on{background:var(--main);color:#fff;}
+        .title{color:var(--main);margin:10px 0;font-size:16px;}
+        .tip{background:#fff3e0;padding:10px;border-left:4px solid var(--sub);border-radius:6px;margin:10px 0;font-size:14px;}
+        .season{background:#e3f2fd;padding:10px;border-left:4px solid var(--main);border-radius:6px;margin:10px 0;font-size:14px;}
+        ul,ol{margin-left:20px;margin-bottom:10px;}
+        li{margin-bottom:4px;}
+        .btn{background:var(--main);color:#fff;border:none;border-radius:6px;padding:12px;width:100%;margin:10px 0;font-size:15px;cursor:pointer;}
+        .shake{background:var(--sub);color:#fff;border:none;border-radius:50px;padding:16px 30px;font-size:16px;margin:10px auto;display:block;cursor:pointer;}
+        .collect{color:var(--gray);cursor:pointer;display:inline-block;margin:5px 0;}
+        .collect.on{color:var(--main);}
+        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:999;}
+        .modal.show{display:flex;}
+        .modal-c{background:var(--card);width:90%;max-width:400px;border-radius:10px;padding:20px;max-height:80vh;overflow-y:auto;}
+        .close{text-align:right;cursor:pointer;font-size:20px;}
+        .login-box{max-width:350px;margin:50px auto;padding:20px;background:var(--card);border-radius:10px;}
+        .input{width:100%;padding:10px;margin:8px 0;border:1px solid var(--border);border-radius:6px;}
+    </style>
+</head>
+<body>
+<div class="head">
+    家常菜谱·每日推荐
+    <div class="head-r">
+        <input class="search-input" id="searchInput" placeholder="搜索菜名、食材..." onkeyup="handleSearch(event)">
+        <div class="btn-t" onclick="showTheme()">主题</div>
+        <div class="btn-t" onclick="showLogin()">登录</div>
+    </div>
+</div>
+
+<ul class="nav">
+    <li class="on" onclick="go(0)">每日推荐</li>
+    <li onclick="go(1)">食材挑选</li>
+    <li onclick="go(2)">营养搭配</li>
+    <li onclick="go(3)">烹饪技巧</li>
+    <li onclick="go(4)">地方菜系</li>
+    <li onclick="go(5)">营养知识</li>
+    <li onclick="go(6)">我的收藏</li>
+    <li onclick="go(7)">管理后台</li>
+</ul>
+
+<style>
+.search-input{padding:6px 12px;border-radius:20px;border:none;width:140px;font-size:13px;}
+.search-input:focus{outline:none;width:180px;}
+</style>
+
+<div class="tab show" id="t0">
+    <div class="card" style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;">
+        <h3>🍽️ 今日营养配餐</h3>
+        <div id="planDate"></div>
+        <div class="tag" style="background:rgba(255,255,255,0.2);">
+            <span onclick="generatePlan('轻奢')">轻奢</span>
+            <span onclick="generatePlan('均衡')">均衡</span>
+            <span onclick="generatePlan('素食')">素食</span>
+            <span onclick="generatePlan('减脂')">减脂</span>
+            <span onclick="generatePlan('高蛋白')">高蛋白</span>
+        </div>
+        <button class="btn" style="background:#fff;color:#667eea;" onclick="generatePlan()">🎲 智能生成今日食谱</button>
+    </div>
+
+    <div class="card" id="breakfastCard">
+        <h3>🌅 早餐推荐</h3>
+        <div id="breakfastContent">点击上方按钮生成今日早餐</div>
+    </div>
+
+    <div class="card" id="lunchCard">
+        <h3>☀️ 午餐推荐</h3>
+        <div id="lunchContent">点击上方按钮生成今日午餐</div>
+    </div>
+
+    <div class="card" id="dinnerCard">
+        <h3>🌙 晚餐推荐</h3>
+        <div id="dinnerContent">点击上方按钮生成今日晚餐</div>
+    </div>
+
+    <div class="card" style="background:#e8f5e9;border-left:4px solid #4caf50;">
+        <h3>📊 今日营养汇总</h3>
+        <div id="nutritionSummary">
+            <p>点击生成食谱后查看营养分析</p>
+        </div>
+        <div class="tip" id="nutritionAdvice"></div>
+    </div>
+
+    <div class="card">
+        <h3>🔍 快速搜索</h3>
+        <input class="input" id="dishSearch" placeholder="输入想吃的菜名或食材..." oninput="searchDish()">
+        <button onclick="onlineSearch()" style="margin-top:8px;padding:8px 16px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:6px;cursor:pointer;">🌐 在线搜索更多菜谱</button>
+        <div id="searchResults"></div>
+        <div id="onlineSearchResults" style="display:none;margin-top:15px;"></div>
+    </div>
+
+    <div class="card">
+        <h3>📅 本周健康食谱</h3>
+        <div class="tag">
+            <span onclick="showWeekPlan(0)" class="on">周一</span>
+            <span onclick="showWeekPlan(1)">周二</span>
+            <span onclick="showWeekPlan(2)">周三</span>
+            <span onclick="showWeekPlan(3)">周四</span>
+            <span onclick="showWeekPlan(4)">周五</span>
+            <span onclick="showWeekPlan(5)">周六</span>
+            <span onclick="showWeekPlan(6)">周日</span>
+        </div>
+        <div id="weekPlanContent"></div>
+    </div>
+</div>
+
+<div class="tab" id="t1">
+    <div class="card">
+        <h3>食材挑选大全</h3>
+        <div id="matInfo">点击菜品里的「怎么挑」查看</div>
+    </div>
+</div>
+
+<div class="tab" id="t2">
+    <div class="card" style="border-left:4px solid #e91e63;">
+        <h3>📊 中国居民膳食指南（2022）核心推荐</h3>
+        <div class="tag">
+            <span class="on" onclick="showNutrition(this,'guide')">膳食指南</span>
+            <span onclick="showNutrition(this,'macro')">宏量营养</span>
+            <span onclick="showNutrition(this,'micro')">微量营养</span>
+            <span onclick="showNutrition(this,'meal')">餐盘设计</span>
+        </div>
+        <div id="nutritionContent">
+            <ul>
+                <li>🍚 谷类为主，粗细搭配 - 每天摄入谷薯类250-400g</li>
+                <li>🥬 多吃蔬菜水果 - 蔬菜300-500g，水果200-350g</li>
+                <li>🥩 适量摄入鱼禽蛋瘦肉 - 每天120-200g</li>
+                <li>🥛 每天300ml奶或等量奶制品</li>
+                <li>🧂 少盐少油，控糖限酒 - 盐<6g，油25-30g</li>
+                <li>💧 主动饮水，1500-1700ml/日</li>
+            </ul>
+            <div class="tip">🌟 遵循"东方健康膳食模式"：清淡少盐、植物性食物为主、多吃鱼虾</div>
+        </div>
+    </div>
+
+    <div class="card" style="border-left:4px solid #4caf50;">
+        <h3>⚖️ 三大产能营养素比例</h3>
+        <div style="display:flex;justify-content:space-around;text-align:center;margin:15px 0;">
+            <div style="background:#fff3e0;padding:15px;border-radius:10px;flex:1;margin:0 5px;">
+                <div style="font-size:28px;">🥗</div>
+                <div style="font-weight:bold;color:#e65100;">碳水化合物</div>
+                <div>50-65%</div>
+                <div style="font-size:12px;color:#666;">主要能量来源</div>
+            </div>
+            <div style="background:#e8f5e9;padding:15px;border-radius:10px;flex:1;margin:0 5px;">
+                <div style="font-size:28px;">🥩</div>
+                <div style="font-weight:bold;color:#2e7d32;">蛋白质</div>
+                <div>10-15%</div>
+                <div style="font-size:12px;color:#666;">每日60-90g</div>
+            </div>
+            <div style="background:#e3f2fd;padding:15px;border-radius:10px;flex:1;margin:0 5px;">
+                <div style="font-size:28px;">🧈</div>
+                <div style="font-weight:bold;color:#1565c0;">脂肪</div>
+                <div>20-30%</div>
+                <div style="font-size:12px;color:#666;">适量摄入</div>
+            </div>
+        </div>
+        <div class="tip">💡 中国营养学会推荐：成年男性每日摄入约1800-2200kcal，女性约1600-1800kcal</div>
+    </div>
+
+    <div class="card" style="border-left:4px solid #9c27b0;">
+        <h3>🥗 211餐盘法（健康体重管理）</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin:10px 0;">
+            <div style="background:#ffebee;padding:10px;border-radius:8px;flex:2;">
+                <strong>🥬 蔬菜（2份）</strong><br>约200g，以叶菜为主
+            </div>
+            <div style="background:#fff3e0;padding:10px;border-radius:8px;flex:1;">
+                <strong>🍚 主食（1份）</strong><br>约100g熟重
+            </div>
+            <div style="background:#e8f5e9;padding:10px;border-radius:8px;flex:1;">
+                <strong>🥩 蛋白（1份）</strong><br>约80g
+            </div>
+        </div>
+        <div class="tip">🌟 211餐盘由美国营养学会推荐，适合控制体重、保持血糖稳定</div>
+    </div>
+
+    <div class="card" style="border-left:4px solid #ff9800;">
+        <h3>👤 个性化营养需求计算</h3>
+        <p>根据中国居民膳食参考摄入量：</p>
+        <ul>
+            <li><strong>轻体力男性：</strong>2250kcal/日</li>
+            <li><strong>轻体力女性：</strong>1800kcal/日</li>
+            <li><strong>中体力男性：</strong>3000kcal/日</li>
+            <li><strong>蛋白质：</strong>男性65g/日，女性55g/日</li>
+            <li><strong>钙：</strong>800mg/日（成人的AI值）</li>
+            <li><strong>铁：</strong>男性12mg/日，女性20mg/日</li>
+            <li><strong>维生素A：</strong>800μgRAE/日</li>
+            <li><strong>维生素C：</strong>100mg/日</li>
+        </ul>
+        <div class="tip">💡 不同年龄段、职业、体力活动水平营养需求不同</div>
+    </div>
+
+    <div class="card" style="border-left:4px solid #00bcd4;">
+        <h3>🍎 各类食物交换份表</h3>
+        <div style="columns:2;column-gap:10px;">
+            <div style="break-inside:avoid;background:#f5f5f5;padding:8px;margin-bottom:8px;border-radius:6px;">
+                <strong>谷薯类</strong>：25g米饭=35g馒头=100g土豆
+            </div>
+            <div style="break-inside:avoid;background:#f5f5f5;padding:8px;margin-bottom:8px;border-radius:6px;">
+                <strong>蔬菜类</strong>：500g绿叶菜=200g其他菜
+            </div>
+            <div style="break-inside:avoid;background:#f5f5f5;padding:8px;margin-bottom:8px;border-radius:6px;">
+                <strong>水果类</strong>：200g苹果=300g草莓
+            </div>
+            <div style="break-inside:avoid;background:#f5f5f5;padding:8px;margin-bottom:8px;border-radius:6px;">
+                <strong>肉蛋类</strong>：50g瘦肉=1个鸡蛋=100g虾
+            </div>
+            <div style="break-inside:avoid;background:#f5f5f5;padding:8px;margin-bottom:8px;border-radius:6px;">
+                <strong>豆奶类</strong>：25g黄豆=300ml豆浆
+            </div>
+            <div style="break-inside:avoid;background:#f5f5f5;padding:8px;margin-bottom:8px;border-radius:6px;">
+                <strong>油脂类</strong>：10g植物油=15g花生米
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="tab" id="t3">
+    <div class="card">
+        <h3>🔥 炒菜基本功</h3>
+        <ul>
+            <li><strong>热锅凉油：</strong>锅烧热再放油，油热即下菜，可防粘锅</li>
+            <li><strong>大火快炒：</strong>蔬菜类保持脆嫩，损失营养少</li>
+            <li><strong>油温判断：</strong>油面起纹时为准，筷子入油冒泡即可</li>
+            <li><strong>后放盐：</strong>盐放太早出水多，且碘易挥发</li>
+        </ul>
+        <div class="tip">大厨秘诀：炒菜前将食材沥干水分，避免油爆</div>
+    </div>
+
+    <div class="card">
+        <h3>🥩 肉类烹饪技巧</h3>
+        <ul>
+            <li><strong>逆纹切肉：</strong>切断肌肉纤维，肉更嫩</li>
+            <li><strong>腌制上劲：</strong>加料酒、盐、淀粉抓匀，锁住水分</li>
+            <li><strong>冷水下锅：</strong>炖肉时冷水下锅，蛋白质慢慢变性更嫩</li>
+            <li><strong>炒肉嫩滑：</strong>滑油或滑水，断生即出锅</li>
+            <li><strong>去腥三件套：</strong>料酒、姜、葱是去腥标配</li>
+        </ul>
+        <div class="tip">大厨秘诀：炒肉片时裹蛋清淀粉，嫩度翻倍</div>
+    </div>
+
+    <div class="card">
+        <h3>🥚 蛋类烹饪技巧</h3>
+        <ul>
+            <li><strong>蒸蛋羹：</strong>蛋液与水1:1.5，温水下锅，小火蒸</li>
+            <li><strong>炒鸡蛋：</strong>加几滴水更蓬松，热油下锅</li>
+            <li><strong>荷包蛋：</strong>水微开时磕入，关火焖熟</li>
+            <li><strong>皮蛋：</strong>选斑点分布均匀的，切时涂蜡油不粘刀</li>
+        </ul>
+        <div class="tip">大厨秘诀：蒸蛋时盖盘子或保鲜膜，防止水滴</div>
+    </div>
+
+    <div class="card">
+        <h3>🍚 米饭烹饪技巧</h3>
+        <ul>
+            <li><strong>淘米：</strong>轻柔洗1-2次，保留营养</li>
+            <li><strong>浸泡：</strong>冷水泡30分钟，米饭更饱满</li>
+            <li><strong>水量：</strong>米:水=1:1.2，新米少放水</li>
+            <li><strong>焖饭：</strong>跳闸后再焖5分钟，口感最佳</li>
+        </ul>
+        <div class="tip">大厨秘诀：加几滴香油或白醋，米饭更香亮</div>
+    </div>
+
+    <div class="card">
+        <h3>🥬 蔬菜烹饪技巧</h3>
+        <ul>
+            <li><strong>焯水：</strong>加盐和几滴油，保持翠绿</li>
+            <li><strong>快炒：</strong>旺火快炒1-2分钟，锁住营养</li>
+            <li><strong>盐渍：</strong>丝瓜等切后盐渍5分钟，去多余水分</li>
+            <li><strong>配色：</strong>木耳、胡萝卜、红椒可以丰富色彩</li>
+        </ul>
+        <div class="tip">大厨秘诀：蔬菜中的维生素C怕高温，能生吃的建议凉拌</div>
+    </div>
+
+    <div class="card">
+        <h3>🍜 面食烹饪技巧</h3>
+        <ul>
+            <li><strong>煮面：</strong>水开下面，加凉水反复，劲道有弹性</li>
+            <li><strong>防粘：</strong>加盐或几滴油，防止面条粘连</li>
+            <li><strong>饺子：</strong>水开下饺子，点三次冷水</li>
+            <li><strong>蒸馒头：</strong>冷水上锅，二次醒发更松软</li>
+        </ul>
+        <div class="tip">大厨秘诀：和面时加少许盐或鸡蛋，面食更筋道</div>
+    </div>
+
+    <div class="card">
+        <h3>🧂 调味黄金法则</h3>
+        <ul>
+            <li><strong>糖：</strong>提鲜增甜，放早了会焦化上色</li>
+            <li><strong>醋：</strong>去腥解腻，出锅前放更香</li>
+            <li><strong>酱油：</strong>生抽提鲜，老抽上色</li>
+            <li><strong>料酒：</strong>去腥提香，高温烹调时使用</li>
+            <li><strong>花椒：</strong>炒香后捞出，只留麻味</li>
+            <li><strong>鸡精味精：</strong>出锅前放，高温会失去鲜味</li>
+        </ul>
+        <div class="tip">大厨秘诀：调味比例——咸鲜味：盐1:酱油2；糖醋味：糖3:醋2:酱油1</div>
+    </div>
+
+    <div class="card">
+        <h3>🍲 汤类烹饪技巧</h3>
+        <ul>
+            <li><strong>冷水下料：</strong>肉类冷水下锅，撇浮沫去腥</li>
+            <li><strong>大火催白：</strong>奶白汤需要大火持续沸腾</li>
+            <li><strong>小火清汤：</strong>清汤类宜小火慢炖</li>
+            <li><strong>盐后放：</strong>汤出锅前放盐，肉质更嫩</li>
+        </ul>
+        <div class="tip">大厨秘诀：炖骨头汤时加几滴醋，钙质更容易析出</div>
+    </div>
+</div>
+
+<div class="tab" id="t4">
+    <div class="card">
+        <h3>全国菜系导航</h3>
+        <div class="tag">
+            <span class="on" onclick="cx(this,'all')">全部</span>
+            <span onclick="cx(this,'川')">川菜</span>
+            <span onclick="cx(this,'粤')">粤菜</span>
+            <span onclick="cx(this,'湘')">湘菜</span>
+            <span onclick="cx(this,'鲁')">鲁菜</span>
+            <span onclick="cx(this,'苏')">苏菜</span>
+            <span onclick="cx(this,'浙')">浙菜</span>
+            <span onclick="cx(this,'闽')">闽菜</span>
+            <span onclick="cx(this,'徽')">徽菜</span>
+            <span onclick="cx(this,'东北')">东北菜</span>
+            <span onclick="cx(this,'西北')">西北菜</span>
+            <span onclick="cx(this,'云南')">云南菜</span>
+            <span onclick="cx(this,'上海')">上海菜</span>
+            <span onclick="cx(this,'北京')">北京菜</span>
+            <span onclick="cx(this,'陕西')">陕西菜</span>
+            <span onclick="cx(this,'贵州')">贵州菜</span>
+            <span onclick="cx(this,'湖北')">湖北菜</span>
+            <span onclick="cx(this,'江西')">江西菜</span>
+            <span onclick="cx(this,'广西')">广西菜</span>
+        </div>
+    </div>
+
+    <div class="card" data-cx="川">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=mapo%20tofu%20sichuan%20cuisine%20spicy%20red%20chili%20minced%20pork%20Chinese%20food&image_size=landscape_16_9" alt="麻婆豆腐">
+        <h3>麻婆豆腐｜川菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>嫩豆腐300g（切2cm见方块）</li>
+            <li>猪肉末100g（肥瘦3:7最佳）</li>
+            <li>郫县豆瓣酱2大勺、花椒粉1小勺、蒜苗1根</li>
+            <li>姜蒜末、生抽、淀粉、盐</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>豆腐切小块，开水加少许盐，焯烫2分钟去豆腥，捞出沥干</li>
+            <li>锅中放少许油，中小火炒香猪肉末至变色出油</li>
+            <li>加入郫县豆瓣酱炒出红油，放姜蒜末爆香</li>
+            <li>加清水或高汤300ml，大火烧开</li>
+            <li>放入豆腐，轻轻推匀，小火煮3-5分钟</li>
+            <li>加少许生抽调味，水淀粉勾芡至汤汁浓稠</li>
+            <li>关火后撒花椒粉和蒜苗末，滴几滴香油即可</li>
+        </ol>
+        <div class="tip">技巧：用嫩豆腐更滑嫩；花椒粉出锅前撒更香更麻</div>
+    </div>
+
+    <div class="card" data-cx="川">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=twice%20cooked%20pork%20huiguo%20rou%20sichuan%20crispy%20pork%20belly%20Chinese%20food&image_size=landscape_16_9" alt="回锅肉">
+        <h3>回锅肉｜川菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>五花肉300g（带皮）</li>
+            <li>青蒜苗2根（斜切段）</li>
+            <li>郫县豆瓣酱1.5大勺、甜面酱1小勺、姜蒜片</li>
+            <li>料酒、白糖少许</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>五花肉冷水下锅，加姜片和料酒，煮至八成熟（约20分钟）</li>
+            <li>捞出放凉，切2-3mm厚的薄片（稍冷冻更好切）</li>
+            <li>锅烧热不放油，直接下肉片煸炒至微卷出油</li>
+            <li>盛出多余油脂，留少许底油</li>
+            <li>下姜蒜片爆香，加豆瓣酱炒出红油</li>
+            <li>加甜面酱和少许白糖调味</li>
+            <li>放入蒜苗段，大火快速翻炒30秒出锅</li>
+        </ol>
+        <div class="tip">技巧：肉片稍冷冻更好切；蒜苗别炒太久保持脆嫩</div>
+    </div>
+
+    <div class="card" data-cx="川">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=fish%20fragrant%20shredded%20pork%20yuxiang%20rousi%20sichuan%20sour%20sweet%20Chinese%20food&image_size=landscape_16_9" alt="鱼香肉丝">
+        <h3>鱼香肉丝｜川菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>猪肉丝200g（用料酒、淀粉、盐腌制10分钟）</li>
+            <li>胡萝卜丝50g、木耳丝50g、青椒丝30g</li>
+            <li>泡椒30g（切细）、姜蒜末、葱花</li>
+        </ul>
+        <div class="title">鱼香汁配方</div>
+        <p>生抽1勺、陈醋1勺、白糖1勺、淀粉1勺、清水3勺、少许盐</p>
+        <div class="title">做法</div>
+        <ol>
+            <li>锅中倒油，油热后滑炒肉丝至变色，盛出备用</li>
+            <li>锅中留底油，炒香泡椒末和姜蒜末</li>
+            <li>加入胡萝卜丝、木耳丝、青椒丝炒软</li>
+            <li>倒回炒好的肉丝翻炒均匀</li>
+            <li>淋入调好的鱼香汁，大火快速翻炒至收汁</li>
+            <li>撒葱花出锅</li>
+        </ol>
+        <div class="tip">技巧：鱼香汁的酸甜比例要掌握好，泡椒是关键</div>
+    </div>
+
+    <div class="card" data-cx="川">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=kung%20pao%20chicken%20gongbao%20jiding%20sichuan%20cashews%20peanuts%20Chinese%20food&image_size=landscape_16_9" alt="宫保鸡丁">
+        <h3>宫保鸡丁｜川菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>鸡胸肉250g（切丁，用盐、淀粉、料酒腌制10分钟）</li>
+            <li>油炸花生米50g</li>
+            <li>干辣椒6-8个（剪段）、花椒1小勺、葱段</li>
+            <li>生抽、料酒、白糖、醋、淀粉</li>
+        </ul>
+        <div class="title">调味汁</div>
+        <p>生抽1勺、料酒1勺、白糖1勺、醋0.5勺、淀粉1勺、水2勺</p>
+        <div class="title">做法</div>
+        <ol>
+            <li>锅中倒油，油热后滑炒鸡丁至变色，盛出备用</li>
+            <li>锅中留底油，小火炒香干辣椒和花椒</li>
+            <li>放入葱段爆香</li>
+            <li>倒回鸡丁翻炒均匀</li>
+            <li>淋入调味汁，翻炒至汤汁浓稠</li>
+            <li>最后加入花生米快速翻匀出锅</li>
+        </ol>
+        <div class="tip">技巧：花生米最后放保持酥脆，火候要掌握好避免花椒炒糊</div>
+    </div>
+
+    <div class="card" data-cx="川">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=spicy%20beef%20noodles%20sichuan%20red%20chili%20soup%20Chinese%20food&image_size=landscape_16_9" alt="担担面">
+        <h3>担担面｜川菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>面条200g</li>
+            <li>猪肉末100g</li>
+            <li>芽菜、辣椒油、葱花</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>炒香肉末和芽菜</li>
+            <li>碗底调辣椒油、酱油、醋</li>
+            <li>面条煮熟捞入碗中</li>
+            <li>放肉末撒葱花</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="川">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=sichuan%20boiled%20fish%20water%20boiled%20fish%20spicy%20Chinese%20food&image_size=landscape_16_9" alt="水煮鱼">
+        <h3>水煮鱼｜川菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>草鱼1条（约1kg）</li>
+            <li>豆芽、莴笋片</li>
+            <li>干辣椒50g、花椒20g、豆瓣酱</li>
+            <li>蒜末、姜末、料酒、淀粉</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鱼处理干净，片成薄片，用料酒、盐、淀粉腌制15分钟</li>
+            <li>鱼骨和鱼头煎香，加水熬成鱼汤</li>
+            <li>豆芽和莴笋焯熟铺在碗底</li>
+            <li>锅中炒香豆瓣酱、干辣椒、花椒，加鱼汤煮开</li>
+            <li>放入鱼片煮至变色，倒入碗中</li>
+            <li>热油浇在干辣椒和花椒上激香</li>
+        </ol>
+        <div class="tip">技巧：鱼片要切薄，腌制时加蛋清更嫩滑</div>
+    </div>
+
+    <div class="card" data-cx="川">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=sichuan%20spicy%20hot%20pot%20Chinese%20traditional%20food&image_size=landscape_16_9" alt="毛血旺">
+        <h3>毛血旺｜川菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>鸭血300g、毛肚200g</li>
+            <li>牛百叶、黄喉、午餐肉</li>
+            <li>豆芽、藕片、土豆片</li>
+            <li>干辣椒、花椒、豆瓣酱、火锅底料</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鸭血切块，毛肚、百叶切丝</li>
+            <li>锅中炒香豆瓣酱和火锅底料</li>
+            <li>加水烧开，先煮耐煮的食材（藕片、土豆）</li>
+            <li>再放鸭血、毛肚等烫熟</li>
+            <li>盛入碗中，铺干辣椒和花椒</li>
+            <li>热油浇上，撒香菜即可</li>
+        </ol>
+        <div class="tip">技巧：食材不要煮太久，保持脆嫩口感</div>
+    </div>
+
+    <div class="card" data-cx="川">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=sichuan%20ezu%20with%20black%20bean%20doufu%20Chinese%20food&image_size=landscape_16_9" alt="豆豉鲮鱼">
+        <h3>豆豉鲮鱼｜川菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>鲮鱼1条</li>
+            <li>豆豉30g、蒜末、姜末</li>
+            <li>生抽、老抽、糖、料酒</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鲮鱼处理干净，切块</li>
+            <li>锅中煎至两面金黄</li>
+            <li>炒香豆豉、蒜末、姜末</li>
+            <li>加鱼块和调料，小火焖煮20分钟</li>
+            <li>大火收汁即可</li>
+        </ol>
+        <div class="tip">技巧：鲮鱼要煎透，豆豉要炒香</div>
+    </div>
+
+    <div class="card" data-cx="川">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=sichuan%20mouth%20watering%20chicken%20moutui%20chicken%20Chinese%20food&image_size=landscape_16_9" alt="口水鸡">
+        <h3>口水鸡｜川菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>三黄鸡1只</li>
+            <li>花生碎、芝麻、葱姜蒜</li>
+            <li>辣椒油、花椒粉、生抽、醋</li>
+            <li>白糖、鸡汤</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鸡处理干净，冷水下锅煮15分钟</li>
+            <li>关火焖10分钟，放入冰水冷却</li>
+            <li>调制红油调料：辣椒油+花椒粉+生抽+醋+糖+蒜末</li>
+            <li>鸡切块装盘，淋上红油调料</li>
+            <li>撒花生碎、芝麻、葱花</li>
+        </ol>
+        <div class="tip">技巧：鸡要冰水过凉，皮才脆肉才嫩</div>
+    </div>
+
+    <div class="card" data-cx="川">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=sichuan%20chaoshan%20beef%20shreds%20chaoshan%20rousi%20Chinese%20food&image_size=landscape_16_9" alt="抄手">
+        <h3>抄手｜川菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>抄手皮500g</li>
+            <li>猪肉末300g、虾仁100g</li>
+            <li>葱姜末、盐、料酒、淀粉</li>
+            <li>辣椒油、花椒粉、酱油、醋</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>猪肉末和虾仁剁碎，加葱姜末、盐、料酒搅匀</li>
+            <li>取抄手皮包入馅料，对折捏紧</li>
+            <li>碗中调底料：辣椒油+花椒粉+酱油+醋+葱花</li>
+            <li>抄手下锅煮至浮起</li>
+            <li>捞入碗中，加少许面汤即可</li>
+        </ol>
+        <div class="tip">技巧：馅料要朝一个方向搅拌上劲</div>
+    </div>
+
+    <div class="card" data-cx="粤">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=white%20cut%20chicken%20baiqie%20ji%20cantonese%20crispy%20skin%20Chinese%20food&image_size=landscape_16_9" alt="白切鸡">
+        <h3>白切鸡｜粤菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>三黄鸡1只（约1kg，嫩鸡最佳）</li>
+            <li>姜片10g、葱段15g、沙姜30g</li>
+            <li>生抽、花生油、盐</li>
+        </ul>
+        <div class="title">姜葱蘸料</div>
+        <p>姜末+葱花+少许盐+热花生油+生抽调成蘸汁</p>
+        <div class="title">做法</div>
+        <ol>
+            <li>鸡处理干净，去除内脏和杂质，洗净沥干</li>
+            <li>锅中加足量清水，放入姜片和葱段</li>
+            <li>水烧至微沸（锅底冒小泡），放入整鸡</li>
+            <li>保持小火微沸状态，浸煮15-20分钟（根据鸡大小调整）</li>
+            <li>关火，盖上锅盖焖10分钟</li>
+            <li>捞出迅速放入冰水或冷水中浸泡至完全冷却</li>
+            <li>沥干水分，抹一层薄油，斩件装盘</li>
+            <li>搭配姜葱蘸料或沙姜酱油食用</li>
+        </ol>
+        <div class="tip">技巧：冰水让皮脆肉嫩；火候别太大不然肉老；浸煮时可将鸡提起几次让内部受热均匀</div>
+    </div>
+
+    <div class="card" data-cx="粤">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=steamed%20sea%20bass%20qingzheng%20luyu%20cantonese%20fresh%20fish%20Chinese%20food&image_size=landscape_16_9" alt="清蒸鲈鱼">
+        <h3>清蒸鲈鱼｜粤菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>鲈鱼1条（约600-800g）</li>
+            <li>姜片15g、葱段20g、红椒丝少许</li>
+            <li>蒸鱼豉油2大勺、料酒1小勺、花生油</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鲈鱼处理干净，去鳞去鳃去内脏，洗净</li>
+            <li>鱼身两面各划2-3刀，用少许盐和料酒涂抹鱼身内外，腌制10分钟</li>
+            <li>蒸鱼盘垫上葱段，鱼身铺上姜丝</li>
+            <li>蒸锅加水大火烧开，放入鱼盘</li>
+            <li>水开上汽后蒸8-10分钟（根据鱼大小调整）</li>
+            <li>取出鱼盘，倒掉盘中的腥水</li>
+            <li>去除鱼身上的姜丝，重新铺上新鲜葱丝和红椒丝</li>
+            <li>淋上蒸鱼豉油，浇上滚烫的热油激香</li>
+        </ol>
+        <div class="tip">技巧：时间别太长否则肉老；最后热油激香是关键，能激发葱香</div>
+    </div>
+
+    <div class="card" data-cx="粤">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=lettuce%20with%20oyster%20sauce%20haoyou%20shengcai%20cantonese%20green%20vegetables%20Chinese%20food&image_size=landscape_16_9" alt="蚝油生菜">
+        <h3>蚝油生菜｜粤菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>生菜400g（球生菜或罗马生菜）</li>
+            <li>蒜末15g、蚝油2大勺、生抽1小勺</li>
+            <li>白糖少许、淀粉、香油</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>生菜洗净，撕成大片或整棵对半切开</li>
+            <li>锅中加水烧开，加少许盐和几滴油，放入生菜焯烫10-15秒</li>
+            <li>迅速捞出，沥干水分，整齐摆入盘中</li>
+            <li>锅中放少许油，爆香蒜末</li>
+            <li>加入蚝油、生抽和少许白糖，加少量清水搅匀</li>
+            <li>水淀粉勾薄芡，滴几滴香油</li>
+            <li>将酱汁均匀浇在生菜上即可</li>
+        </ol>
+        <div class="tip">技巧：生菜焯水时间要短，保持脆嫩；蚝油本身有咸味，生抽别放太多</div>
+    </div>
+
+    <div class="card" data-cx="粤">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=char%20siu%20barbecue%20pork%20cantonese%20red%20roast%20pork%20Chinese%20food&image_size=landscape_16_9" alt="叉烧肉">
+        <h3>叉烧肉｜粤菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>猪里脊肉500g（或梅花肉）</li>
+            <li>叉烧酱3大勺、生抽1大勺、料酒1大勺</li>
+            <li>蜂蜜2大勺、蒜末10g、姜片10g</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>猪肉洗净，用厨房纸吸干水分</li>
+            <li>叉烧酱、生抽、料酒、蒜末、姜片混合均匀</li>
+            <li>猪肉放入酱料中，按摩均匀，确保每处都裹上酱料</li>
+            <li>放入冰箱冷藏腌制4小时以上（最好过夜）</li>
+            <li>烤箱预热200度，将肉放在烤架上，下面垫烤盘接油</li>
+            <li>烤20分钟后取出，刷一层蜂蜜</li>
+            <li>再烤10-15分钟至表面金黄焦香</li>
+            <li>取出放凉10分钟，切片装盘</li>
+        </ol>
+        <div class="tip">技巧：腌制时间越长越入味；最后刷蜂蜜让表面更亮更香甜</div>
+    </div>
+
+    <div class="card" data-cx="粤">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=wonton%20soup%20wonton%20tang%20cantonese%20shrimp%20dumplings%20Chinese%20food&image_size=landscape_16_9" alt="云吞面">
+        <h3>云吞面｜粤菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>云吞皮20张</li>
+            <li>虾仁、猪肉末</li>
+            <li>鸡蛋面、高汤</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>虾仁肉末做馅包云吞</li>
+            <li>高汤烧开煮云吞</li>
+            <li>另起锅煮面条</li>
+            <li>面条装碗，加云吞和汤</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="粤">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=cantonese%20steamed%20salted%20fish%20Chinese%20food&image_size=landscape_16_9" alt="清蒸石斑">
+        <h3>清蒸石斑｜粤菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>石斑鱼1条（约600g）</li>
+            <li>姜丝、葱丝、红椒丝</li>
+            <li>蒸鱼豉油、料酒、花生油</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鱼处理干净，两面划几刀</li>
+            <li>鱼身抹少许盐和料酒，腌制10分钟</li>
+            <li>姜丝铺在鱼身上下</li>
+            <li>水开上汽蒸10分钟</li>
+            <li>倒掉腥水，换新葱丝红椒丝</li>
+            <li>淋热油和蒸鱼豉油</li>
+        </ol>
+        <div class="tip">技巧：选新鲜石斑，鱼眼明亮有弹性</div>
+    </div>
+
+    <div class="card" data-cx="粤">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=cantonese%20braised%20pigeon%20gold%20price%20squab%20Chinese%20food&image_size=landscape_16_9" alt="白灼基围虾">
+        <h3>白灼基围虾｜粤菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>基围虾500g</li>
+            <li>姜片、葱段、料酒</li>
+            <li>蘸料：生抽、姜末、蒜末</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>虾洗净，剪去虾须和虾枪</li>
+            <li>锅中加水，放姜片葱段料酒烧开</li>
+            <li>倒入基围虾，煮至变色弯曲</li>
+            <li>捞出装盘，配蘸料食用</li>
+        </ol>
+        <div class="tip">技巧：虾不要煮太久，否则肉质会老</div>
+    </div>
+
+    <div class="card" data-cx="粤">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=cantonese%20claypot%20rice%20煲仔饭%20Chinese%20food&image_size=landscape_16_9" alt="煲仔饭">
+        <h3>煲仔饭｜粤菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>大米200g</li>
+            <li>腊肠2根、腊肉100g</li>
+            <li>鸡蛋1个、青菜</li>
+            <li>生抽、蚝油、糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>大米洗净泡30分钟</li>
+            <li>砂锅底刷油，倒入米和水</li>
+            <li>大火煮开，小火焖至收水</li>
+            <li>铺上切好的腊肠腊肉</li>
+            <li>中间打一个鸡蛋，盖盖焖熟</li>
+            <li>淋上调好的酱油汁</li>
+        </ol>
+        <div class="tip">技巧：锅巴是煲仔饭的灵魂，小火多焖几分钟</div>
+    </div>
+
+    <div class="card" data-cx="粤">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=cantonese%20sweet%20and%20sour%20pork%20咕噜肉%20Chinese%20food&image_size=landscape_16_9" alt="咕噜肉">
+        <h3>咕噜肉｜粤菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>五花肉300g（切块）</li>
+            <li>青红椒、洋葱各半个</li>
+            <li>番茄酱、白醋、白糖</li>
+            <li>淀粉、盐、料酒</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>肉块用盐、料酒腌制10分钟</li>
+            <li>裹淀粉炸至金黄酥脆</li>
+            <li>调糖醋汁：番茄酱+白醋+白糖+水淀粉</li>
+            <li>炒香青红椒洋葱</li>
+            <li>倒入糖醋汁煮开</li>
+            <li>放入炸好的肉块翻匀</li>
+        </ol>
+        <div class="tip">技巧：肉要炸两遍才酥脆，糖醋汁要浓稠</div>
+    </div>
+
+    <div class="card" data-cx="粤">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=cantonese%20steamed%20eggplant%20with%20garlic%20Chinese%20food&image_size=landscape_16_9" alt="蒜蓉蒸茄子">
+        <h3>蒜蓉蒸茄子｜粤菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>茄子2个</li>
+            <li>蒜末30g、小米椒</li>
+            <li>生抽、蚝油、糖、香油</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>茄子切条，蒸软（约8分钟）</li>
+            <li>蒜末用热油爆香</li>
+            <li>加生抽、蚝油、糖调成蒜蓉汁</li>
+            <li>茄子装盘，淋上蒜蓉汁</li>
+            <li>再蒸5分钟，出锅滴香油</li>
+        </ol>
+        <div class="tip">技巧：茄子切条易熟，蒜蓉要爆香</div>
+    </div>
+
+    <div class="card" data-cx="粤">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=cantonese%20fried%20rice%20with%20egg%20yangzhou%20fried%20rice%20Chinese%20food&image_size=landscape_16_9" alt="扬州炒饭">
+        <h3>扬州炒饭｜粤菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>隔夜米饭300g</li>
+            <li>鸡蛋2个、火腿丁、虾仁</li>
+            <li>青豆、玉米粒、胡萝卜丁</li>
+            <li>盐、生抽、葱花</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>配料焯水至熟</li>
+            <li>鸡蛋打散，炒成蛋碎</li>
+            <li>锅中多油，炒米饭至粒粒分明</li>
+            <li>加入配料和鸡蛋翻炒</li>
+            <li>加盐和生抽调味</li>
+            <li>撒葱花出锅</li>
+        </ol>
+        <div class="tip">技巧：米饭要用隔夜的，炒出来才粒粒分明</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=chili%20fried%20pork%20hunan%20cuisine%20spicy%20green%20pepper%20Chinese%20food&image_size=landscape_16_9" alt="辣椒炒肉">
+        <h3>辣椒炒肉｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>五花肉200g</li>
+            <li>青椒3个、小米椒</li>
+            <li>豆豉、蒜、酱油</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>肉片用酱油腌制</li>
+            <li>少油煸炒肉片出油</li>
+            <li>加豆豉蒜爆香</li>
+            <li>放辣椒大火快炒</li>
+        </ol>
+        <div class="tip">技巧：五花肉先煸香；辣椒要选辣的才够味</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=steamed%20fish%20head%20with%20chopped%20chili%20duojiao%20yutou%20hunan%20Chinese%20food&image_size=landscape_16_9" alt="剁椒鱼头">
+        <h3>剁椒鱼头｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>胖头鱼头1个</li>
+            <li>剁椒、姜葱、料酒</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鱼头洗净，用料酒盐腌制</li>
+            <li>铺姜丝，放剁椒</li>
+            <li>水开蒸12分钟</li>
+            <li>撒葱花，淋热油</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20farmhouse%20stir%20fried%20pork%20nongjia%20xiaochao%20rou%20Chinese%20food&image_size=landscape_16_9" alt="农家小炒肉">
+        <h3>农家小炒肉｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>猪瘦肉200g</li>
+            <li>青红椒各1个</li>
+            <li>大蒜、豆豉、生抽</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>肉片用生抽淀粉腌制</li>
+            <li>滑炒肉片盛出</li>
+            <li>爆香蒜片豆豉</li>
+            <li>加辣椒和肉片翻炒</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20pork%20belly%20hongshao%20rou%20caramelized%20Chinese%20food&image_size=landscape_16_9" alt="毛氏红烧肉">
+        <h3>毛氏红烧肉｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>五花肉500g</li>
+            <li>冰糖、八角、桂皮</li>
+            <li>干辣椒、姜</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>五花肉切块焯水</li>
+            <li>炒糖色加肉块上色</li>
+            <li>加水焖煮40分钟</li>
+            <li>收汁至油亮</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20shredded%20pork%20with%20green%20pepper%20xuhu%20rousi%20Chinese%20food&image_size=landscape_16_9" alt="小炒黄牛肉">
+        <h3>小炒黄牛肉｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>黄牛肉300g（逆纹切薄片）</li>
+            <li>青红椒各1个、香菜段</li>
+            <li>姜丝、蒜末、小米椒</li>
+            <li>生抽、蚝油、料酒、淀粉</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>牛肉用盐、料酒、淀粉腌制10分钟</li>
+            <li>青红椒切块，香菜切段</li>
+            <li>热锅热油，快速滑炒牛肉至变色盛出</li>
+            <li>爆香姜丝蒜末小米椒</li>
+            <li>倒入青红椒翻炒，加生抽蚝油调味</li>
+            <li>倒回牛肉，撒香菜段快速翻匀出锅</li>
+        </ol>
+        <div class="tip">技巧：牛肉要切薄，大火快炒才嫩</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20steamed%20fish%20head%20with%20chopped%20chili%20duojiao%20yutou%20Chinese%20food&image_size=landscape_16_9" alt="剁椒鱼头">
+        <h3>剁椒鱼头｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>花鲢鱼头1个（约1.5kg）</li>
+            <li>剁椒200g、小米椒、泡椒</li>
+            <li>姜丝、蒜末、葱段</li>
+            <li>蒸鱼豉油、料酒、盐</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鱼头洗净，从中间劈开但不切断</li>
+            <li>用料酒和盐涂抹鱼头内外，腌制10分钟</li>
+            <li>鱼头铺在盘中，撒姜丝和一半蒜末</li>
+            <li>剁椒铺在鱼头上，再放泡椒</li>
+            <li>水开上汽蒸15分钟</li>
+            <li>倒掉腥水，淋蒸鱼豉油，撒葱花</li>
+            <li>浇热油激香即可</li>
+        </ol>
+        <div class="tip">技巧：剁椒要选发酵好的，酸辣味才够</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20eggplant%20hongshao%20qiezi%20Chinese%20food&image_size=landscape_16_9" alt="红烧茄子">
+        <h3>红烧茄子｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>长茄子2个（约400g）</li>
+            <li>肉末100g</li>
+            <li>蒜末、葱花</li>
+            <li>生抽、老抽、蚝油、糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>茄子切条，用淡盐水浸泡10分钟</li>
+            <li>挤干水分，撒淀粉裹匀</li>
+            <li>热油中炸至金黄捞出</li>
+            <li>锅中留底油，炒香肉末</li>
+            <li>加蒜末、生抽、老抽、蚝油、糖调味</li>
+            <li>倒入茄子翻炒均匀，加少许水焖2分钟</li>
+            <li>撒葱花出锅</li>
+        </ol>
+        <div class="tip">技巧：茄子提前腌制挤水，省油又入味</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20spicy%20chicken%20legs%20xiangsu%20jitu%20Chinese%20food&image_size=landscape_16_9" alt="香酥鸡">
+        <h3>香酥鸡｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>鸡腿2个（约500g）</li>
+            <li>姜葱、八角、桂皮</li>
+            <li>面粉、淀粉、鸡蛋</li>
+            <li>盐、料酒、椒盐粉</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鸡腿洗净，用料酒、盐、姜葱腌制30分钟</li>
+            <li>放入锅中，加水和香料煮20分钟至熟</li>
+            <li>捞出沥干，拆骨切块</li>
+            <li>鸡蛋打散，面粉淀粉混合</li>
+            <li>鸡块裹粉再裹蛋液</li>
+            <li>热油炸至金黄酥脆</li>
+            <li>撒椒盐粉即可</li>
+        </ol>
+        <div class="tip">技巧：先煮后炸，外酥里嫩</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20bamboo%20shoots%20hongshao%20sun%20Chinese%20food&image_size=landscape_16_9" alt="油焖笋">
+        <h3>油焖笋｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>春笋500g</li>
+            <li>姜片、葱花</li>
+            <li>生抽、老抽、糖、香油</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>春笋去壳，切滚刀块</li>
+            <li>开水焯烫2分钟去涩</li>
+            <li>锅中放油，爆香姜片</li>
+            <li>放入笋块翻炒</li>
+            <li>加生抽、老抽、糖调味</li>
+            <li>加水没过笋，小火焖15分钟</li>
+            <li>大火收汁，滴香油撒葱花</li>
+        </ol>
+        <div class="tip">技巧：春笋一定要焯水去涩</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20stir%20fried%20shredded%20potato%20chao%20shredded%20potato%20Chinese%20food&image_size=landscape_16_9" alt="酸辣土豆丝">
+        <h3>酸辣土豆丝｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>土豆2个（约400g）</li>
+            <li>干辣椒、花椒、蒜末</li>
+            <li>香醋、生抽、盐、糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>土豆切细丝，泡在清水中去淀粉</li>
+            <li>沥干水分备用</li>
+            <li>热锅热油，爆香干辣椒花椒蒜末</li>
+            <li>倒入土豆丝大火快炒</li>
+            <li>加少许生抽和盐调味</li>
+            <li>出锅前沿锅边淋香醋，加少许糖提鲜</li>
+        </ol>
+        <div class="tip">技巧：醋要晚放才香，土豆丝别炒太久</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20pork%20intestines%20hongshao%20chang%20Chinese%20food&image_size=landscape_16_9" alt="酸辣肥肠">
+        <h3>酸辣肥肠｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>猪大肠500g</li>
+            <li>泡椒、酸萝卜、青椒</li>
+            <li>姜片、蒜末、料酒</li>
+            <li>生抽、蚝油、糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>大肠洗净，用料酒和盐搓洗</li>
+            <li>冷水下锅煮20分钟，捞出切段</li>
+            <li>酸萝卜切块，青椒切块</li>
+            <li>爆香姜片蒜末泡椒</li>
+            <li>倒入大肠翻炒</li>
+            <li>加酸萝卜和调料，焖5分钟</li>
+            <li>放青椒翻炒出锅</li>
+        </ol>
+        <div class="tip">技巧：大肠要彻底清洗，煮至八分熟再炒</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20dong%20an%20chicken%20dong%20an%20zi%20ji%20Chinese%20food&image_size=landscape_16_9" alt="东安子鸡">
+        <h3>东安子鸡｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>嫩母鸡1只（约1kg）</li>
+            <li>泡椒、姜片、葱段</li>
+            <li>花椒、料酒、醋、盐</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鸡洗净切块，焯水去血沫</li>
+            <li>锅中放姜葱，加水煮鸡块至熟</li>
+            <li>捞出切条</li>
+            <li>爆香泡椒和花椒</li>
+            <li>倒入鸡条翻炒，加料酒和醋</li>
+            <li>加盐调味，撒葱段出锅</li>
+        </ol>
+        <div class="tip">技巧：鸡肉要嫩，煮的时间不宜过长</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20spicy%20duck%20jiang%20ban%20ya%20Chinese%20food&image_size=landscape_16_9" alt="酱板鸭">
+        <h3>酱板鸭｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>老鸭1只（约1.5kg）</li>
+            <li>豆瓣酱、甜面酱、料酒</li>
+            <li>八角、桂皮、香叶、花椒</li>
+            <li>姜葱、干辣椒</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鸭子处理干净，焯水去血沫</li>
+            <li>锅中放调料炒香，加水烧开</li>
+            <li>放入鸭子卤煮1小时</li>
+            <li>捞出沥干，刷上卤汁</li>
+            <li>烤箱180度烤20分钟</li>
+            <li>切块装盘，淋卤汁</li>
+        </ol>
+        <div class="tip">技巧：卤汁要浓稠，烤制让皮更酥脆</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20blood%20duck%20yong%20zhou%20xue%20ya%20Chinese%20food&image_size=landscape_16_9" alt="永州血鸭">
+        <h3>永州血鸭｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>嫩鸭1只（约1kg）</li>
+            <li>鸭血、青椒、红椒</li>
+            <li>姜片、蒜末、豆豉</li>
+            <li>料酒、生抽、醋</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鸭子切块，焯水备用</li>
+            <li>热油炒香姜蒜豆豉</li>
+            <li>放入鸭肉煸炒至出油</li>
+            <li>加料酒、生抽翻炒</li>
+            <li>加水焖煮至熟</li>
+            <li>倒入鸭血翻炒，加青红椒</li>
+            <li>滴少许醋出锅</li>
+        </ol>
+        <div class="tip">技巧：鸭血要新鲜，最后加入才嫩滑</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20dry%20pot%20bullfrog%20gan%20guo%20wa%20Chinese%20food&image_size=landscape_16_9" alt="干锅牛蛙">
+        <h3>干锅牛蛙｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>牛蛙500g（切块）</li>
+            <li>青红椒、洋葱、蒜苗</li>
+            <li>干辣椒、花椒、姜片</li>
+            <li>料酒、生抽、蚝油</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>牛蛙用盐、料酒腌制10分钟</li>
+            <li>热油滑炒牛蛙至变色盛出</li>
+            <li>爆香干辣椒花椒姜片</li>
+            <li>加豆瓣酱炒出红油</li>
+            <li>倒入牛蛙和配菜翻炒</li>
+            <li>加生抽蚝油调味，撒蒜苗</li>
+        </ol>
+        <div class="tip">技巧：牛蛙要新鲜，炒至八分熟即可</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20fish%20tofu%20soup%20doufu%20tang%20Chinese%20food&image_size=landscape_16_9" alt="鱼籽豆腐">
+        <h3>鱼籽豆腐｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>鱼籽200g</li>
+            <li>嫩豆腐1块</li>
+            <li>姜片、蒜末、葱花</li>
+            <li>料酒、生抽、剁椒</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鱼籽洗净，用料酒腌制5分钟</li>
+            <li>豆腐切块，焯水备用</li>
+            <li>爆香姜片蒜末剁椒</li>
+            <li>放入鱼籽翻炒至变色</li>
+            <li>加水烧开，放入豆腐</li>
+            <li>加生抽调味，撒葱花出锅</li>
+        </ol>
+        <div class="tip">技巧：鱼籽要新鲜，炒时别弄碎</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20steamed%20pumpkin%20zheng%20nan%20gua%20Chinese%20food&image_size=landscape_16_9" alt="蒸南瓜">
+        <h3>蒸南瓜｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>南瓜500g</li>
+            <li>红枣、枸杞</li>
+            <li>冰糖、蜂蜜</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>南瓜去皮切块</li>
+            <li>盘中铺南瓜块，放红枣枸杞</li>
+            <li>撒冰糖，蒸15分钟</li>
+            <li>淋蜂蜜即可</li>
+        </ol>
+        <div class="tip">技巧：选老南瓜，甜度高</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20salted%20vegetable%20soup%20yan%20cai%20tang%20Chinese%20food&image_size=landscape_16_9" alt="酸辣汤">
+        <h3>酸辣汤｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>豆腐1块、木耳、黄花</li>
+            <li>鸡蛋1个、葱花</li>
+            <li>醋、生抽、胡椒粉、淀粉</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>木耳黄花泡发切段</li>
+            <li>豆腐切丝</li>
+            <li>锅中加水烧开，放食材</li>
+            <li>加生抽调味</li>
+            <li>淋水淀粉勾芡</li>
+            <li>打入鸡蛋花</li>
+            <li>出锅前加醋和胡椒粉</li>
+        </ol>
+        <div class="tip">技巧：醋要最后放，才能保持酸味</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20pig%20feet%20hongshao%20zhu%20ti%20Chinese%20food&image_size=landscape_16_9" alt="红烧猪蹄">
+        <h3>红烧猪蹄｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>猪蹄1只（约800g）</li>
+            <li>姜片、葱段、八角</li>
+            <li>料酒、生抽、老抽、冰糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>猪蹄焯水去毛</li>
+            <li>炒糖色，加猪蹄上色</li>
+            <li>加料酒生抽老抽调味</li>
+            <li>加水焖煮1小时</li>
+            <li>大火收汁至浓稠</li>
+        </ol>
+        <div class="tip">技巧：猪蹄要焖够时间才软烂</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20spicy%20fried%20chicken%20xi%20xiang%20ji%20Chinese%20food&image_size=landscape_16_9" alt="湘西土匪鸡">
+        <h3>湘西土匪鸡｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>土鸡半只（约800g）</li>
+            <li>干辣椒、花椒、姜片</li>
+            <li>青红椒、蒜苗</li>
+            <li>料酒、生抽、蚝油</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鸡肉切块，焯水备用</li>
+            <li>爆香干辣椒花椒姜片</li>
+            <li>放入鸡块翻炒</li>
+            <li>加料酒生抽蚝油调味</li>
+            <li>加水焖煮20分钟</li>
+            <li>放青红椒蒜苗翻炒出锅</li>
+        </ol>
+        <div class="tip">技巧：用土鸡更香，辣味要足</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20bamboo%20shoots%20with%20pork%20sun%20rou%20Chinese%20food&image_size=landscape_16_9" alt="笋干炒肉">
+        <h3>笋干炒肉｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>笋干100g（泡发）</li>
+            <li>五花肉200g</li>
+            <li>姜片、蒜末</li>
+            <li>生抽、蚝油、料酒</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>笋干泡发切段</li>
+            <li>五花肉切片</li>
+            <li>煸炒五花肉出油</li>
+            <li>加姜蒜爆香</li>
+            <li>放入笋干翻炒</li>
+            <li>加调料调味，加水焖煮</li>
+        </ol>
+        <div class="tip">技巧：笋干要泡透，否则有涩味</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20spicy%20cabbage%20suancai%20baicai%20Chinese%20food&image_size=landscape_16_9" alt="酸辣包菜">
+        <h3>酸辣包菜｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>包菜400g</li>
+            <li>干辣椒、花椒、蒜末</li>
+            <li>醋、生抽、盐、糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>包菜撕片，洗净沥干</li>
+            <li>爆香干辣椒花椒蒜末</li>
+            <li>倒入包菜大火快炒</li>
+            <li>加生抽和盐调味</li>
+            <li>出锅前淋醋，加少许糖</li>
+        </ol>
+        <div class="tip">技巧：包菜要手撕，更入味</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20egg%20plant%20with%20minced%20pork%20qiezi%20roumo%20Chinese%20food&image_size=landscape_16_9" alt="肉末茄子">
+        <h3>肉末茄子｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>长茄子2个</li>
+            <li>猪肉末150g</li>
+            <li>蒜末、葱花</li>
+            <li>生抽、蚝油、糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>茄子切条，微波加热3分钟</li>
+            <li>炒香肉末</li>
+            <li>加蒜末和调料</li>
+            <li>倒入茄子翻炒</li>
+            <li>加水焖煮2分钟</li>
+            <li>撒葱花出锅</li>
+        </ol>
+        <div class="tip">技巧：茄子先微波，省油又快</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20steamed%20vegetables%20zheng%20cai%20Chinese%20food&image_size=landscape_16_9" alt="蒜蓉空心菜">
+        <h3>蒜蓉空心菜｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>空心菜400g</li>
+            <li>蒜末30g</li>
+            <li>盐、蚝油、香油</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>空心菜洗净切段</li>
+            <li>热油爆香蒜末</li>
+            <li>放入空心菜翻炒</li>
+            <li>加盐和蚝油调味</li>
+            <li>翻炒均匀出锅</li>
+        </ol>
+        <div class="tip">技巧：空心菜炒时间别太长，保持翠绿</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20chicken%20wings%20hongshao%20jiyi%20Chinese%20food&image_size=landscape_16_9" alt="红烧鸡翅">
+        <h3>红烧鸡翅｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>鸡翅中10个</li>
+            <li>姜片、葱段、八角</li>
+            <li>生抽、老抽、冰糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鸡翅焯水去血沫</li>
+            <li>炒糖色，加鸡翅上色</li>
+            <li>加料酒生抽老抽调味</li>
+            <li>加水焖煮20分钟</li>
+            <li>大火收汁</li>
+        </ol>
+        <div class="tip">技巧：鸡翅要先焯水，更干净</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20spicy%20tofu%20mapo%20doufu%20Chinese%20food&image_size=landscape_16_9" alt="麻辣豆腐">
+        <h3>麻辣豆腐｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>嫩豆腐2块</li>
+            <li>郫县豆瓣酱、花椒、蒜末</li>
+            <li>生抽、蚝油、淀粉</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>豆腐切块，焯水备用</li>
+            <li>爆香蒜末和豆瓣酱</li>
+            <li>加水烧开，放豆腐</li>
+            <li>加生抽蚝油调味</li>
+            <li>淋水淀粉勾芡</li>
+            <li>撒花椒粉出锅</li>
+        </ol>
+        <div class="tip">技巧：豆腐要嫩，用内酯豆腐最好</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20fish%20hongshao%20yu%20Chinese%20food&image_size=landscape_16_9" alt="红烧鱼">
+        <h3>红烧鱼｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>草鱼1条（约800g）</li>
+            <li>姜片、葱段、干辣椒</li>
+            <li>生抽、老抽、料酒、糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鱼处理干净，两面划刀</li>
+            <li>鱼身抹盐，腌制10分钟</li>
+            <li>热油煎鱼至两面金黄</li>
+            <li>加姜葱干辣椒爆香</li>
+            <li>加料酒生抽老抽糖</li>
+            <li>加水焖煮15分钟</li>
+            <li>大火收汁</li>
+        </ol>
+        <div class="tip">技巧：煎鱼时油要热，才不会粘锅</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20pork%20belly%20with%20chestnuts%20hongshao%20li%20rou%20Chinese%20food&image_size=landscape_16_9" alt="板栗烧肉">
+        <h3>板栗烧肉｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>五花肉500g</li>
+            <li>板栗200g</li>
+            <li>姜片、葱段、八角</li>
+            <li>生抽、老抽、冰糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>五花肉切块焯水</li>
+            <li>板栗去壳去皮</li>
+            <li>炒糖色，加肉块上色</li>
+            <li>加调料和水焖煮30分钟</li>
+            <li>放入板栗继续焖煮15分钟</li>
+            <li>大火收汁</li>
+        </ol>
+        <div class="tip">技巧：板栗要煮到软糯才好吃</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20steamed%20meat%20balls%20zheng%20rou%20Chinese%20food&image_size=landscape_16_9" alt="蒸肉粉">
+        <h3>粉蒸肉｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>五花肉300g</li>
+            <li>蒸肉米粉100g</li>
+            <li>土豆、南瓜</li>
+            <li>生抽、料酒、糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>五花肉切片</li>
+            <li>用生抽料酒糖腌制10分钟</li>
+            <li>裹上蒸肉米粉</li>
+            <li>土豆南瓜切块垫底</li>
+            <li>肉片铺在上面</li>
+            <li>蒸30分钟</li>
+        </ol>
+        <div class="tip">技巧：米粉要提前浸泡，更软糯</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20hot%20pot%20vegetables%20re%20guo%20cai%20Chinese%20food&image_size=landscape_16_9" alt="火锅菜">
+        <h3>干锅包菜｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>包菜400g</li>
+            <li>腊肉100g</li>
+            <li>干辣椒、花椒、蒜末</li>
+            <li>生抽、蚝油、糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>包菜撕片</li>
+            <li>腊肉切片煸炒出油</li>
+            <li>爆香干辣椒花椒蒜末</li>
+            <li>倒入包菜翻炒</li>
+            <li>加生抽蚝油调味</li>
+            <li>翻炒至断生出锅</li>
+        </ol>
+        <div class="tip">技巧：腊肉要先煸炒，香味更浓</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20spicy%20beef%20noodles%20niurou%20mian%20Chinese%20food&image_size=landscape_16_9" alt="麻辣牛肉面">
+        <h3>麻辣牛肉面｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>牛腩300g</li>
+            <li>面条200g</li>
+            <li>郫县豆瓣酱、花椒、辣椒</li>
+            <li>姜片、葱段、香菜</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>牛腩切块焯水</li>
+            <li>爆香豆瓣酱和香料</li>
+            <li>加牛腩翻炒</li>
+            <li>加水焖煮1小时</li>
+            <li>另起锅煮面条</li>
+            <li>面条装碗，加牛肉和汤</li>
+        </ol>
+        <div class="tip">技巧：牛腩要焖够时间才软烂</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20steamed%20chicken%20with%20mushrooms%20zhengi%20juni%20Chinese%20food&image_size=landscape_16_9" alt="蘑菇蒸鸡">
+        <h3>蘑菇蒸鸡｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>鸡腿肉300g</li>
+            <li>香菇、金针菇</li>
+            <li>姜片、葱段</li>
+            <li>生抽、蚝油、料酒</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鸡腿肉切块，用调料腌制10分钟</li>
+            <li>蘑菇洗净切块</li>
+            <li>蘑菇铺在碗底</li>
+            <li>鸡肉铺在上面</li>
+            <li>蒸15分钟</li>
+            <li>撒葱花即可</li>
+        </ol>
+        <div class="tip">技巧：用鸡腿肉更嫩</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20pork%20with%20dried%20vegetables%20caigan%20rou%20Chinese%20food&image_size=landscape_16_9" alt="梅菜扣肉">
+        <h3>梅菜扣肉｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>五花肉500g</li>
+            <li>梅干菜100g</li>
+            <li>姜片、葱段</li>
+            <li>生抽、老抽、糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>五花肉煮至八分熟</li>
+            <li>皮朝下煎至金黄</li>
+            <li>切块，皮朝下摆入碗中</li>
+            <li>梅干菜炒香铺在上面</li>
+            <li>蒸40分钟</li>
+            <li>倒扣装盘</li>
+        </ol>
+        <div class="tip">技巧：梅干菜要提前泡发</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20egg%20plant%20with%20garlic%20suanmiao%20qiezi%20Chinese%20food&image_size=landscape_16_9" alt="蒜苗炒茄子">
+        <h3>蒜苗炒茄子｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>长茄子2个</li>
+            <li>蒜苗100g</li>
+            <li>蒜末、干辣椒</li>
+            <li>生抽、蚝油、糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>茄子切条，撒盐腌制10分钟</li>
+            <li>蒜苗切段</li>
+            <li>热油炒茄子至变软</li>
+            <li>盛出备用</li>
+            <li>爆香蒜末干辣椒</li>
+            <li>放入蒜苗翻炒</li>
+            <li>倒回茄子，加调料调味</li>
+        </ol>
+        <div class="tip">技巧：茄子腌制后挤干水分更省油</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20stir%20fried%20shredded%20beef%20chao%20niurou%20si%20Chinese%20food&image_size=landscape_16_9" alt="青椒牛肉丝">
+        <h3>青椒牛肉丝｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>牛里脊200g（切丝）</li>
+            <li>青椒2个（切丝）</li>
+            <li>姜丝、蒜末</li>
+            <li>生抽、蚝油、料酒、淀粉</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>牛肉丝用盐、料酒、淀粉腌制10分钟</li>
+            <li>青椒切丝</li>
+            <li>热油滑炒牛肉丝至变色</li>
+            <li>盛出备用</li>
+            <li>爆香姜丝蒜末</li>
+            <li>放入青椒翻炒</li>
+            <li>倒回牛肉丝，加调料调味</li>
+        </ol>
+        <div class="tip">技巧：牛肉要逆纹切丝，更嫩</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20pork%20liver%20hongshao%20gan%20Chinese%20food&image_size=landscape_16_9" alt="青椒炒猪肝">
+        <h3>青椒炒猪肝｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>猪肝200g（切片）</li>
+            <li>青椒2个</li>
+            <li>姜丝、蒜末</li>
+            <li>生抽、料酒、淀粉</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>猪肝用料酒和淀粉抓匀</li>
+            <li>青椒切块</li>
+            <li>热油滑炒猪肝至变色</li>
+            <li>盛出备用</li>
+            <li>爆香姜丝蒜末</li>
+            <li>放入青椒翻炒</li>
+            <li>倒回猪肝，加生抽调味</li>
+        </ol>
+        <div class="tip">技巧：猪肝炒的时间别太长，否则会老</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20chicken%20with%20mushrooms%20qigu%20ji%20Chinese%20food&image_size=landscape_16_9" alt="小鸡炖蘑菇">
+        <h3>小鸡炖蘑菇｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>小公鸡半只（约500g）</li>
+            <li>干香菇100g</li>
+            <li>姜片、葱段、八角</li>
+            <li>料酒、生抽、盐</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鸡肉切块，焯水去血沫</li>
+            <li>香菇泡发</li>
+            <li>爆香姜葱八角</li>
+            <li>放入鸡肉翻炒</li>
+            <li>加料酒生抽调味</li>
+            <li>加水焖煮30分钟</li>
+            <li>放入香菇继续焖煮15分钟</li>
+        </ol>
+        <div class="tip">技巧：用干香菇更香</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20pork%20belly%20with%20bamboo%20shoots%20sun%20rou%20Chinese%20food&image_size=landscape_16_9" alt="笋尖炒肉">
+        <h3>笋尖炒肉｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>笋尖200g</li>
+            <li>猪肉丝150g</li>
+            <li>蒜末、葱花</li>
+            <li>生抽、蚝油、料酒</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>笋尖切片，焯水去涩</li>
+            <li>肉丝用料酒和淀粉腌制</li>
+            <li>炒香肉丝</li>
+            <li>盛出备用</li>
+            <li>爆香蒜末</li>
+            <li>放入笋尖翻炒</li>
+            <li>倒回肉丝，加调料调味</li>
+        </ol>
+        <div class="tip">技巧：笋尖一定要焯水</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20fried%20eggs%20with%20tomatoes%20fanqie%20chao%20ji%20Chinese%20food&image_size=landscape_16_9" alt="番茄炒蛋">
+        <h3>番茄炒蛋｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>番茄2个</li>
+            <li>鸡蛋3个</li>
+            <li>葱花</li>
+            <li>盐、糖、生抽</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鸡蛋打散，炒成蛋碎</li>
+            <li>番茄切块</li>
+            <li>热油炒番茄至出汁</li>
+            <li>加少许糖提鲜</li>
+            <li>倒入鸡蛋翻炒</li>
+            <li>加盐调味，撒葱花出锅</li>
+        </ol>
+        <div class="tip">技巧：番茄要炒出汁才好吃</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20stir%20fried%20green%20beans%20qingdou%20chao%20rou%20Chinese%20food&image_size=landscape_16_9" alt="豆角炒肉">
+        <h3>豆角炒肉｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>豆角300g</li>
+            <li>猪肉末150g</li>
+            <li>蒜末、干辣椒</li>
+            <li>生抽、蚝油、盐</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>豆角洗净切段</li>
+            <li>热油炒肉末至变色</li>
+            <li>盛出备用</li>
+            <li>爆香蒜末干辣椒</li>
+            <li>放入豆角翻炒</li>
+            <li>加调料调味，加水焖煮5分钟</li>
+            <li>倒回肉末翻炒</li>
+        </ol>
+        <div class="tip">技巧：豆角要焖煮熟透</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20pork%20belly%20hongshao%20rou%20Chinese%20food&image_size=landscape_16_9" alt="红烧肉">
+        <h3>红烧肉｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>五花肉500g</li>
+            <li>姜片、葱段、八角</li>
+            <li>生抽、老抽、冰糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>五花肉切块焯水</li>
+            <li>炒糖色，加肉块上色</li>
+            <li>加姜葱八角爆香</li>
+            <li>加生抽老抽调味</li>
+            <li>加水焖煮40分钟</li>
+            <li>大火收汁</li>
+        </ol>
+        <div class="tip">技巧：用冰糖炒糖色更亮</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20fried%20shrimp%20chao%20xia%20Chinese%20food&image_size=landscape_16_9" alt="油爆虾">
+        <h3>油爆虾｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>基围虾300g</li>
+            <li>姜片、葱段</li>
+            <li>料酒、生抽、糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>虾剪去虾须虾枪</li>
+            <li>热油爆香姜葱</li>
+            <li>放入虾快速翻炒</li>
+            <li>加料酒生抽糖调味</li>
+            <li>翻炒至虾变红</li>
+            <li>撒葱花出锅</li>
+        </ol>
+        <div class="tip">技巧：虾要大火快炒才嫩</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20pork%20belly%20with%20potatoes%20shu%20tou%20hongshao%20rou%20Chinese%20food&image_size=landscape_16_9" alt="土豆红烧肉">
+        <h3>土豆红烧肉｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>五花肉500g</li>
+            <li>土豆300g</li>
+            <li>姜片、葱段、八角</li>
+            <li>生抽、老抽、冰糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>五花肉切块焯水</li>
+            <li>土豆切块</li>
+            <li>炒糖色，加肉块上色</li>
+            <li>加调料和水焖煮30分钟</li>
+            <li>放入土豆继续焖煮15分钟</li>
+            <li>大火收汁</li>
+        </ol>
+        <div class="tip">技巧：土豆要后放，避免煮烂</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20stir%20fried%20pork%20liver%20chao%20gan%20Chinese%20food&image_size=landscape_16_9" alt="韭菜炒猪肝">
+        <h3>韭菜炒猪肝｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>猪肝200g</li>
+            <li>韭菜100g</li>
+            <li>姜丝、蒜末</li>
+            <li>生抽、料酒、淀粉</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>猪肝切片，用料酒淀粉抓匀</li>
+            <li>韭菜切段</li>
+            <li>热油滑炒猪肝至变色</li>
+            <li>盛出备用</li>
+            <li>爆香姜丝蒜末</li>
+            <li>放入韭菜翻炒</li>
+            <li>倒回猪肝，加生抽调味</li>
+        </ol>
+        <div class="tip">技巧：韭菜炒的时间别太长</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20egg%20plant%20hongshao%20qie%20Chinese%20food&image_size=landscape_16_9" alt="地三鲜">
+        <h3>地三鲜｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>茄子2个</li>
+            <li>土豆1个、青椒1个</li>
+            <li>蒜末、葱花</li>
+            <li>生抽、蚝油、糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>茄子切条，土豆切块，青椒切块</li>
+            <li>分别炸至金黄</li>
+            <li>爆香蒜末</li>
+            <li>倒入所有食材翻炒</li>
+            <li>加调料调味</li>
+            <li>撒葱花出锅</li>
+        </ol>
+        <div class="tip">技巧：食材要分开炸，火候要控制好</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20steamed%20eggs%20zheng%20dan%20Chinese%20food&image_size=landscape_16_9" alt="蒸水蛋">
+        <h3>蒸水蛋｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>鸡蛋3个</li>
+            <li>温水、盐、香油</li>
+            <li>葱花</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鸡蛋打散</li>
+            <li>加1.5倍温水和盐</li>
+            <li>过筛到蒸碗中</li>
+            <li>水开后蒸8分钟</li>
+            <li>滴香油，撒葱花</li>
+        </ol>
+        <div class="tip">技巧：水要温的，过筛更细腻</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20tofu%20hongshao%20doufu%20Chinese%20food&image_size=landscape_16_9" alt="红烧豆腐">
+        <h3>红烧豆腐｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>嫩豆腐1块</li>
+            <li>蒜末、葱花</li>
+            <li>生抽、蚝油、糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>豆腐切块，煎至两面金黄</li>
+            <li>爆香蒜末</li>
+            <li>加生抽蚝油糖调味</li>
+            <li>加水焖煮5分钟</li>
+            <li>撒葱花出锅</li>
+        </ol>
+        <div class="tip">技巧：豆腐要煎定型再烧</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20stir%20fried%20celery%20qin%20cai%20chao%20rou%20Chinese%20food&image_size=landscape_16_9" alt="芹菜炒肉">
+        <h3>芹菜炒肉｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>芹菜200g</li>
+            <li>猪肉丝150g</li>
+            <li>蒜末</li>
+            <li>生抽、蚝油、盐</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>芹菜切段</li>
+            <li>肉丝用盐料酒腌制</li>
+            <li>炒香肉丝</li>
+            <li>盛出备用</li>
+            <li>爆香蒜末</li>
+            <li>放入芹菜翻炒</li>
+            <li>倒回肉丝，加调料调味</li>
+        </ol>
+        <div class="tip">技巧：芹菜要快炒保持脆嫩</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20cabbage%20hongshao%20baicai%20Chinese%20food&image_size=landscape_16_9" alt="手撕包菜">
+        <h3>手撕包菜｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>包菜400g</li>
+            <li>干辣椒、花椒、蒜末</li>
+            <li>生抽、醋、糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>包菜手撕成片</li>
+            <li>爆香干辣椒花椒蒜末</li>
+            <li>倒入包菜大火快炒</li>
+            <li>加生抽调味</li>
+            <li>出锅前淋醋，加少许糖</li>
+        </ol>
+        <div class="tip">技巧：包菜要手撕更入味</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20stir%20fried%20pork%20belly%20chao%20rou%20Chinese%20food&image_size=landscape_16_9" alt="回锅肉">
+        <h3>回锅肉｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>五花肉300g</li>
+            <li>青椒、蒜苗</li>
+            <li>郫县豆瓣酱、甜面酱</li>
+            <li>姜片、蒜末</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>五花肉煮至八分熟</li>
+            <li>切片</li>
+            <li>煸炒肉片出油</li>
+            <li>盛出备用</li>
+            <li>爆香姜蒜豆瓣酱</li>
+            <li>倒入肉片翻炒</li>
+            <li>放青椒蒜苗，加甜面酱调味</li>
+        </ol>
+        <div class="tip">技巧：五花肉要煮到八分熟</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20duck%20hongshao%20ya%20Chinese%20food&image_size=landscape_16_9" alt="啤酒鸭">
+        <h3>啤酒鸭｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>鸭肉500g</li>
+            <li>啤酒1瓶</li>
+            <li>姜片、葱段、八角</li>
+            <li>生抽、老抽、冰糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鸭肉切块，焯水去血沫</li>
+            <li>炒糖色，加鸭肉上色</li>
+            <li>加姜葱八角爆香</li>
+            <li>倒入啤酒，没过鸭肉</li>
+            <li>加生抽老抽调味</li>
+            <li>小火焖煮40分钟</li>
+            <li>大火收汁</li>
+        </ol>
+        <div class="tip">技巧：用啤酒代替水，鸭肉更嫩</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20steamed%20pork%20with%20rice%20flour%20zheng%20rou%20fen%20Chinese%20food&image_size=landscape_16_9" alt="粉蒸排骨">
+        <h3>粉蒸排骨｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>排骨500g</li>
+            <li>蒸肉米粉100g</li>
+            <li>土豆、南瓜</li>
+            <li>生抽、料酒、糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>排骨切块，用调料腌制30分钟</li>
+            <li>裹上蒸肉米粉</li>
+            <li>土豆南瓜切块垫底</li>
+            <li>排骨铺在上面</li>
+            <li>蒸40分钟</li>
+        </ol>
+        <div class="tip">技巧：排骨要腌制够时间才入味</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20beef%20hongshao%20niurou%20Chinese%20food&image_size=landscape_16_9" alt="红烧牛肉">
+        <h3>红烧牛肉｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>牛腩500g</li>
+            <li>土豆、胡萝卜</li>
+            <li>姜片、葱段、八角</li>
+            <li>生抽、老抽、冰糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>牛腩切块，焯水去血沫</li>
+            <li>炒糖色，加牛腩上色</li>
+            <li>加调料和水焖煮1小时</li>
+            <li>放入土豆胡萝卜继续焖煮20分钟</li>
+            <li>大火收汁</li>
+        </ol>
+        <div class="tip">技巧：牛腩要焖够时间才软烂</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20stir%20fried%20pork%20chops%20chao%20zhutou%20Chinese%20food&image_size=landscape_16_9" alt="青椒排骨">
+        <h3>青椒排骨｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>排骨300g</li>
+            <li>青椒2个</li>
+            <li>姜片、蒜末</li>
+            <li>生抽、蚝油、料酒</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>排骨焯水，煮熟</li>
+            <li>青椒切块</li>
+            <li>爆香姜蒜</li>
+            <li>放入排骨翻炒</li>
+            <li>加调料调味</li>
+            <li>放青椒翻炒出锅</li>
+        </ol>
+        <div class="tip">技巧：排骨要先煮熟再炒</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20chicken%20hongshao%20ji%20Chinese%20food&image_size=landscape_16_9" alt="红烧鸡块">
+        <h3>红烧鸡块｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>鸡肉500g</li>
+            <li>姜片、葱段、八角</li>
+            <li>生抽、老抽、冰糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鸡肉切块，焯水去血沫</li>
+            <li>炒糖色，加鸡块上色</li>
+            <li>加姜葱八角爆香</li>
+            <li>加生抽老抽调味</li>
+            <li>加水焖煮25分钟</li>
+            <li>大火收汁</li>
+        </ol>
+        <div class="tip">技巧：用冰糖炒糖色更亮</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20stir%20fried%20egg%20plant%20chao%20qie%20Chinese%20food&image_size=landscape_16_9" alt="青椒炒茄子">
+        <h3>青椒炒茄子｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>长茄子2个</li>
+            <li>青椒2个</li>
+            <li>蒜末、干辣椒</li>
+            <li>生抽、蚝油、糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>茄子切条，撒盐腌制10分钟</li>
+            <li>青椒切块</li>
+            <li>热油炒茄子至变软</li>
+            <li>盛出备用</li>
+            <li>爆香蒜末干辣椒</li>
+            <li>放入青椒翻炒</li>
+            <li>倒回茄子，加调料调味</li>
+        </ol>
+        <div class="tip">技巧：茄子腌制后挤干水分更省油</div>
+    </div>
+
+    <div class="card" data-cx="湘">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hunan%20braised%20pork%20belly%20hongshao%20zhu%20Chinese%20food&image_size=landscape_16_9" alt="黄豆焖猪手">
+        <h3>黄豆焖猪手｜湘菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>猪手1只</li>
+            <li>黄豆100g</li>
+            <li>姜片、葱段、八角</li>
+            <li>生抽、老抽、冰糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>猪手切块，焯水去毛</li>
+            <li>黄豆提前泡发</li>
+            <li>炒糖色，加猪手上色</li>
+            <li>加调料和水焖煮1小时</li>
+            <li>放入黄豆继续焖煮20分钟</li>
+            <li>大火收汁</li>
+        </ol>
+        <div class="tip">技巧：黄豆要提前泡发</div>
+    </div>
+
+    <div class="card" data-cx="鲁">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=sweet%20and%20sour%20pork%20tenderloin%20tangcu%20liji%20shandong%20Chinese%20food&image_size=landscape_16_9" alt="糖醋里脊">
+        <h3>糖醋里脊｜鲁菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>猪里脊300g</li>
+            <li>淀粉、番茄酱、糖、醋</li>
+        </ul>
+        <div class="title">糖醋汁</div>
+        <p>番茄酱2勺、白糖1勺、醋1勺、生抽半勺、水少许</p>
+        <div class="title">做法</div>
+        <ol>
+            <li>里脊肉切条腌制</li>
+            <li>裹淀粉炸至金黄</li>
+            <li>炒糖醋汁至浓稠</li>
+            <li>倒入里脊翻匀挂汁</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="鲁">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=braised%20sea%20cucumber%20with%20scallion%20congshao%20haishen%20shandong%20Chinese%20food&image_size=landscape_16_9" alt="葱烧海参">
+        <h3>葱烧海参｜鲁菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>海参200g</li>
+            <li>大葱白段</li>
+            <li>蚝油、生抽、淀粉</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>海参泡发焯水</li>
+            <li>葱白炸至金黄</li>
+            <li>加调料和水焖煮</li>
+            <li>勾芡出锅</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="鲁">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=braised%20pork%20shank%20shandong%20style%20hongshao%20tuishou%20Chinese%20food&image_size=landscape_16_9" alt="红烧肘子">
+        <h3>红烧肘子｜鲁菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>猪肘子1个</li>
+            <li>葱姜、八角、桂皮</li>
+            <li>冰糖、酱油</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>肘子焯水去毛</li>
+            <li>煎至微黄</li>
+            <li>加调料和水焖煮1小时</li>
+            <li>收汁至浓稠</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="苏">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=squirrel%20fish%20songshu%20guiyu%20jiangsu%20crispy%20sweet%20sour%20Chinese%20food&image_size=landscape_16_9" alt="松鼠鳜鱼">
+        <h3>松鼠鳜鱼｜苏菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>鳜鱼1条</li>
+            <li>淀粉、番茄酱、糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鱼处理干净，切花刀</li>
+            <li>拍淀粉炸至金黄</li>
+            <li>炒糖醋汁浇在鱼上</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="苏">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=braised%20meatballs%20qingdun%20shizitou%20jiangsu%20soup%20Chinese%20food&image_size=landscape_16_9" alt="清炖狮子头">
+        <h3>清炖狮子头｜苏菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>猪肉末400g</li>
+            <li>荸荠、青菜</li>
+            <li>葱姜、盐、淀粉</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>肉末加荸荠末、葱姜水搅匀</li>
+            <li>做成大肉圆</li>
+            <li>开水下锅微沸炖40分钟</li>
+            <li>加青菜调味</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="苏">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=dongpo%20pork%20dongpo%20rou%20hangzhou%20braised%20belly%20Chinese%20food&image_size=landscape_16_9" alt="东坡肉">
+        <h3>东坡肉｜苏菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>五花肉500g</li>
+            <li>葱姜、黄酒、冰糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>五花肉切块焯水</li>
+            <li>砂锅垫葱姜，放肉</li>
+            <li>加黄酒冰糖炖1小时</li>
+            <li>扣入碗中蒸30分钟</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="浙">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=west%20lake%20vinegar%20fish%20xihu%20cuyu%20zhejiang%20sweet%20sour%20Chinese%20food&image_size=landscape_16_9" alt="西湖醋鱼">
+        <h3>西湖醋鱼｜浙菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>草鱼中段</li>
+            <li>糖、醋、酱油、淀粉</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鱼处理干净，开水汆熟</li>
+            <li>调糖醋汁勾芡</li>
+            <li>浇在鱼上</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="浙">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=beggar%20chicken%20jiaohua%20ji%20zhejiang%20baked%20Chinese%20food&image_size=landscape_16_9" alt="叫化鸡">
+        <h3>叫化鸡｜浙菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>母鸡1只</li>
+            <li>荷叶、黄泥</li>
+            <li>葱姜、料酒</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鸡腌制后用荷叶包裹</li>
+            <li>裹上黄泥</li>
+            <li>烤制2小时</li>
+            <li>敲开黄泥食用</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="闽">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=fo%20tiao%20qiang%20buddha%20jumps%20over%20the%20wall%20fujian%20seafood%20Chinese%20food&image_size=landscape_16_9" alt="佛跳墙">
+        <h3>佛跳墙｜闽菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>海参、鲍鱼、鱼翅</li>
+            <li>香菇、花胶、火腿</li>
+            <li>高汤、料酒</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>各食材分别处理</li>
+            <li>分层放入坛中</li>
+            <li>加高汤文火慢煨</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="闽">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=lychee%20meat%20lizhi%20rou%20fujian%20sweet%20sour%20pork%20Chinese%20food&image_size=landscape_16_9" alt="荔枝肉">
+        <h3>荔枝肉｜闽菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>猪瘦肉300g</li>
+            <li>马蹄、淀粉</li>
+            <li>番茄酱、糖、醋</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>肉切十字花刀，裹淀粉</li>
+            <li>炸至金黄</li>
+            <li>炒糖醋汁挂匀</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="闽">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=shrimp%20with%20dragon%20beard%20longxu%20xia%20fujian%20crispy%20shrimp%20Chinese%20food&image_size=landscape_16_9" alt="龙须虾">
+        <h3>龙须虾｜闽菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>大虾10只</li>
+            <li>粉丝、葱姜</li>
+            <li>蒜蓉、生抽</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>虾开背去虾线</li>
+            <li>粉丝泡软铺盘底</li>
+            <li>虾摆粉丝上</li>
+            <li>蒜蓉生抽调味蒸5分钟</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="徽">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=smelly%20mandarin%20fish%20chouguiyu%20anhui%20braised%20fish%20Chinese%20food&image_size=landscape_16_9" alt="臭鳜鱼">
+        <h3>臭鳜鱼｜徽菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>臭鳜鱼1条</li>
+            <li>腊肉、笋片、姜蒜</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鱼洗净切块</li>
+            <li>爆香姜蒜腊肉</li>
+            <li>加鱼块焖烧</li>
+            <li>收汁出锅</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="徽">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=anhui%20braised%20pork%20with%20bamboo%20shoots%20hongshao%20sun%20rou%20Chinese%20food&image_size=landscape_16_9" alt="红烧笋肉">
+        <h3>红烧笋肉｜徽菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>五花肉300g</li>
+            <li>冬笋、葱姜</li>
+            <li>酱油、糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>五花肉切块焯水</li>
+            <li>笋切块焯水去涩</li>
+            <li>炒糖色加肉上色</li>
+            <li>加笋和水焖煮</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="东北">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=pot%20sticker%20pork%20guobaorou%20northeast%20chinese%20crispy%20sweet%20sour%20Chinese%20food&image_size=landscape_16_9" alt="锅包肉">
+        <h3>锅包肉｜东北菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>猪里脊300g</li>
+            <li>淀粉、糖、醋</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>肉片腌制，裹厚淀粉</li>
+            <li>炸至金黄酥脆</li>
+            <li>炒糖醋汁挂匀</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="东北">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=braised%20chicken%20with%20mushrooms%20xiaoji%20dun%20mogu%20northeast%20Chinese%20food&image_size=landscape_16_9" alt="小鸡炖蘑菇">
+        <h3>小鸡炖蘑菇｜东北菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>鸡肉500g</li>
+            <li>干香菇/榛蘑</li>
+            <li>粉条、葱姜</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鸡肉焯水去血沫</li>
+            <li>炒香葱姜，加鸡块翻炒</li>
+            <li>加水炖30分钟，加蘑菇粉条</li>
+            <li>再炖20分钟调味</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="东北">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=three%20fresh%20vegetables%20disanxian%20northeast%20potato%20eggplant%20pepper%20Chinese%20food&image_size=landscape_16_9" alt="地三鲜">
+        <h3>地三鲜｜东北菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>土豆、茄子、青椒</li>
+            <li>蒜、酱油、盐</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>土豆茄子切块炸熟</li>
+            <li>爆香蒜末</li>
+            <li>加所有食材翻炒调味</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="东北">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=northeast%20braised%20pork%20with%20beans%20hongshao%20dou%20rou%20Chinese%20food&image_size=landscape_16_9" alt="猪肉炖粉条">
+        <h3>猪肉炖粉条｜东北菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>五花肉400g</li>
+            <li>红薯粉条</li>
+            <li>白菜、葱姜</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>五花肉切块焯水</li>
+            <li>炒香葱姜，加肉翻炒</li>
+            <li>加水炖20分钟</li>
+            <li>加粉条白菜炖软</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="西北">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=big%20plate%20chicken%20dapanji%20xinjiang%20spicy%20chicken%20potato%20Chinese%20food&image_size=landscape_16_9" alt="大盘鸡">
+        <h3>大盘鸡｜西北菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>鸡肉500g</li>
+            <li>土豆、青椒、红椒</li>
+            <li>干辣椒、花椒、姜蒜</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鸡肉焯水</li>
+            <li>炒香调料，加鸡块翻炒</li>
+            <li>加土豆炖软</li>
+            <li>放青红椒焖熟</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="西北">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=lanzhou%20beef%20noodles%20clear%20soup%20hand%20pulled%20noodles%20Chinese%20food&image_size=landscape_16_9" alt="兰州牛肉面">
+        <h3>兰州牛肉面｜西北菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>牛肉500g</li>
+            <li>面条、香菜、蒜苗</li>
+            <li>八角、桂皮、香叶</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>牛肉炖至软烂</li>
+            <li>调清汤牛肉汤</li>
+            <li>面条煮熟装碗</li>
+            <li>浇汤加牛肉片</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="西北">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=xinjiang%20kebab%20chuanr%20grilled%20meat%20skewers%20Chinese%20food&image_size=landscape_16_9" alt="烤羊肉串">
+        <h3>烤羊肉串｜西北菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>羊肉500g</li>
+            <li>孜然、辣椒面、盐</li>
+            <li>洋葱、竹签</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>羊肉切块，用洋葱水腌制</li>
+            <li>串在竹签上</li>
+            <li>炭火烤制</li>
+            <li>撒孜然辣椒盐</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="云南">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=cross%20bridge%20rice%20noodles%20guoqiao%20mixian%20yunnan%20chicken%20soup%20Chinese%20food&image_size=landscape_16_9" alt="过桥米线">
+        <h3>过桥米线｜云南菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>米线200g</li>
+            <li>鸡汤、肉片、蔬菜</li>
+            <li>鹌鹑蛋、豆腐皮</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>烧滚烫鸡汤</li>
+            <li>依次放入食材烫熟</li>
+            <li>加米线调味</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="云南">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=steam%20pot%20chicken%20qiguo%20ji%20yunnan%20steamed%20Chinese%20food&image_size=landscape_16_9" alt="汽锅鸡">
+        <h3>汽锅鸡｜云南菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>鸡肉500g</li>
+            <li>姜葱、火腿片</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鸡肉切块放入汽锅</li>
+            <li>加姜片火腿</li>
+            <li>蒸2小时</li>
+            <li>加盐调味</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="上海">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=shanghai%20braised%20pork%20belly%20hongshao%20rou%20red%20glossy%20Chinese%20food&image_size=landscape_16_9" alt="红烧肉">
+        <h3>红烧肉｜上海菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>五花肉500g</li>
+            <li>冰糖、生抽、老抽</li>
+            <li>葱、姜、料酒</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>五花肉切块焯水</li>
+            <li>炒糖色，加肉块上色</li>
+            <li>加调料和水焖煮</li>
+            <li>收汁至油亮</li>
+        </ol>
+        <div class="tip">技巧：冰糖炒色更红亮；小火慢炖更入味</div>
+    </div>
+
+    <div class="card" data-cx="上海">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=shanghai%20stir%20fried%20shrimp%20youbao%20xia%20crispy%20river%20shrimp%20Chinese%20food&image_size=landscape_16_9" alt="油爆虾">
+        <h3>油爆虾｜上海菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>河虾300g</li>
+            <li>料酒、生抽、糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>虾剪须洗净</li>
+            <li>热油爆香虾</li>
+            <li>加调料快速翻炒</li>
+            <li>收汁出锅</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="上海">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=shanghai%20soup%20dumplings%20xiaolongbao%20steamed%20buns%20Chinese%20food&image_size=landscape_16_9" alt="小笼包">
+        <h3>小笼包｜上海菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>猪肉末200g</li>
+            <li>皮冻、面粉</li>
+            <li>葱姜、生抽</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>肉末加皮冻碎和调料</li>
+            <li>擀皮包馅</li>
+            <li>蒸8分钟</li>
+            <li>趁热食用</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="上海">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=shanghai%20stir%20fried%20noodles%20with%20shredded%20pork%20chao%20mian%20Chinese%20food&image_size=landscape_16_9" alt="炒面">
+        <h3>肉丝炒面｜上海菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>面条200g</li>
+            <li>猪肉丝、青菜</li>
+            <li>酱油、蚝油</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>面条煮熟过冷水</li>
+            <li>炒香肉丝和青菜</li>
+            <li>加面条和调料翻炒</li>
+            <li>出锅前加葱花</li>
+        </ol>
+    </div>
+
+    <div class="card" data-cx="北京">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=peking%20duck%20crispy%20skin%20chinese%20beijing%20cuisine%20food&image_size=landscape_16_9" alt="北京烤鸭">
+        <h3>北京烤鸭｜北京菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>北京填鸭1只（约2kg）</li>
+            <li>麦芽糖、料酒、葱姜</li>
+            <li>荷叶饼、甜面酱、葱丝、黄瓜条</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鸭子处理干净，用料酒和葱姜腌制2小时</li>
+            <li>麦芽糖加水调稀，均匀刷在鸭皮上</li>
+            <li>晾干鸭皮（约4小时，皮紧绷发亮）</li>
+            <li>烤箱200度烤40-50分钟，中途刷油</li>
+            <li>出炉后趁热片皮，搭配荷叶饼和配料食用</li>
+        </ol>
+        <div class="tip">技巧：鸭皮晾干是关键，确保皮脆肉嫩</div>
+    </div>
+
+    <div class="card" data-cx="北京">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=beijing%20hot%20pot%20lamb%20slices%20chinese%20traditional%20food&image_size=landscape_16_9" alt="涮羊肉">
+        <h3>涮羊肉｜北京菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>羊肉卷500g（首选内蒙古羊）</li>
+            <li>清汤锅底（葱段、姜片、枸杞）</li>
+            <li>麻酱、腐乳、韭菜花、辣椒油</li>
+            <li>白菜、豆腐、粉丝、菌菇</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>锅中加清水，放入葱段姜片枸杞烧开</li>
+            <li>调制蘸料：麻酱+腐乳+韭菜花+辣椒油</li>
+            <li>羊肉片入锅涮3-5秒至变色捞出</li>
+            <li>搭配蘸料和蔬菜食用</li>
+        </ol>
+        <div class="tip">技巧：羊肉要切薄，涮的时间不宜过长</div>
+    </div>
+
+    <div class="card" data-cx="北京">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=beijing%20fried%20sauce%20noodles%20zhajiang%20mian%20Chinese%20food&image_size=landscape_16_9" alt="炸酱面">
+        <h3>炸酱面｜北京菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>面条200g</li>
+            <li>五花肉末300g</li>
+            <li>黄酱、甜面酱</li>
+            <li>黄瓜丝、豆芽、青豆</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>黄酱和甜面酱按2:1混合，加少许水稀释</li>
+            <li>锅中放油，炒香肉末至变色</li>
+            <li>倒入酱料，小火翻炒10分钟至浓稠</li>
+            <li>面条煮熟过冷水，拌入炸酱</li>
+            <li>搭配黄瓜丝、豆芽等配菜</li>
+        </ol>
+        <div class="tip">技巧：炸酱要炒透，酱香才浓郁</div>
+    </div>
+
+    <div class="card" data-cx="陕西">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=xian%20roujiamo%20chinese%20hamburger%20pork%20meat%20bun%20food&image_size=landscape_16_9" alt="肉夹馍">
+        <h3>肉夹馍｜陕西菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>五花肉500g</li>
+            <li>白吉馍4个</li>
+            <li>八角、桂皮、香叶、冰糖</li>
+            <li>花椒、干辣椒、姜葱</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>五花肉切块焯水去血沫</li>
+            <li>锅中放冰糖炒至融化，加肉块上色</li>
+            <li>加调料和水，小火焖煮1小时至软烂</li>
+            <li>白吉馍烤至外皮酥脆</li>
+            <li>肉剁碎夹入馍中，淋少许肉汁</li>
+        </ol>
+        <div class="tip">技巧：肉要炖得酥烂，馍要烤得外酥内软</div>
+    </div>
+
+    <div class="card" data-cx="陕西">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=xian%20cold%20noodles%20liangpi%20chinese%20cold%20wheat%20noodles%20food&image_size=landscape_16_9" alt="凉皮">
+        <h3>凉皮｜陕西菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>凉皮200g（或自制）</li>
+            <li>黄瓜丝、豆芽</li>
+            <li>辣椒油、香醋、生抽、盐</li>
+            <li>蒜末、芝麻酱、花生碎</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>凉皮切宽条，黄瓜切丝，豆芽焯水</li>
+            <li>碗中调汁：辣椒油+香醋+生抽+盐+蒜末</li>
+            <li>凉皮、黄瓜丝、豆芽放入碗中</li>
+            <li>淋上酱汁，加芝麻酱和花生碎</li>
+            <li>拌匀即可食用</li>
+        </ol>
+        <div class="tip">技巧：自制凉皮用高筋面粉洗出面筋更筋道</div>
+    </div>
+
+    <div class="card" data-cx="陕西">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=shanxi%20biangbiang%20noodles%20wide%20hand%20pulled%20chinese%20food&image_size=landscape_16_9" alt="油泼面">
+        <h3>油泼面｜陕西菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>手工宽面200g</li>
+            <li>蒜末、葱花、辣椒面</li>
+            <li>生抽、香醋、盐</li>
+            <li>青菜、豆芽</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>面条煮熟，过冷水备用</li>
+            <li>青菜和豆芽焯水</li>
+            <li>面条和蔬菜放入碗中，加蒜末和辣椒面</li>
+            <li>烧热油，泼在辣椒面上激香</li>
+            <li>加生抽、香醋、盐调味，拌匀</li>
+        </ol>
+        <div class="tip">技巧：油温要高，泼油瞬间香味扑鼻</div>
+    </div>
+
+    <div class="card" data-cx="贵州">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=guizhou%20spicy%20chicken%20dish%20chili%20oil%20chinese%20food&image_size=landscape_16_9" alt="辣子鸡">
+        <h3>辣子鸡｜贵州菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>鸡肉500g</li>
+            <li>干辣椒200g</li>
+            <li>花椒、姜蒜、料酒</li>
+            <li>盐、糖、酱油</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鸡肉切块，用料酒和盐腌制20分钟</li>
+            <li>锅中放油，炸鸡肉至金黄酥脆</li>
+            <li>留少许油，炒香姜蒜和辣椒花椒</li>
+            <li>倒入炸好的鸡块翻炒</li>
+            <li>加酱油和糖调味，出锅</li>
+        </ol>
+        <div class="tip">技巧：鸡肉要炸得酥脆，辣椒要炒出红油</div>
+    </div>
+
+    <div class="card" data-cx="贵州">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=guizhou%20sour%20soup%20fish%20tomato%20spicy%20chinese%20food&image_size=landscape_16_9" alt="酸汤鱼">
+        <h3>酸汤鱼｜贵州菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>草鱼1条</li>
+            <li>酸汤（番茄发酵）</li>
+            <li>姜片、蒜、花椒、干辣椒</li>
+            <li>豆腐、豆芽、青菜</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鱼处理干净，切块或整条</li>
+            <li>锅中放油，炒香姜蒜和干辣椒</li>
+            <li>倒入酸汤，烧开后放入鱼</li>
+            <li>小火煮15分钟，加豆腐豆芽</li>
+            <li>最后放青菜，加盐调味</li>
+        </ol>
+        <div class="tip">技巧：酸汤可用番茄发酵或直接用酸汤调料包</div>
+    </div>
+
+    <div class="card" data-cx="贵州">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=guizhou%20rice%20noodles%20beef%20spicy%20chinese%20food&image_size=landscape_16_9" alt="花溪牛肉粉">
+        <h3>花溪牛肉粉｜贵州菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>米粉200g</li>
+            <li>牛肉500g</li>
+            <li>牛骨汤、花椒、辣椒</li>
+            <li>香菜、酸萝卜、葱花</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>牛肉和牛骨熬汤2小时</li>
+            <li>米粉泡软后煮熟</li>
+            <li>碗底放花椒粉、盐、酱油</li>
+            <li>米粉装碗，浇上牛肉汤</li>
+            <li>加牛肉片、酸萝卜、香菜葱花</li>
+        </ol>
+        <div class="tip">技巧：汤底要熬够时间，味道才浓郁</div>
+    </div>
+
+    <div class="card" data-cx="湖北">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=wuhan%20hot%20dry%20noodles%20reganmian%20chinese%20food&image_size=landscape_16_9" alt="热干面">
+        <h3>热干面｜湖北菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>碱水面200g</li>
+            <li>芝麻酱、香油、生抽</li>
+            <li>辣椒油、醋、盐</li>
+            <li>葱花、酸豆角、萝卜干</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>芝麻酱加香油调稀</li>
+            <li>面条煮熟，沥干水分</li>
+            <li>面条放入碗中，加芝麻酱拌匀</li>
+            <li>加生抽、辣椒油、醋调味</li>
+            <li>撒葱花、酸豆角、萝卜干</li>
+        </ol>
+        <div class="tip">技巧：面条要趁热拌，芝麻酱才香</div>
+    </div>
+
+    <div class="card" data-cx="湖北">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=hubei%20steamed%20fish%20head%20with%20chopped%20chili%20chinese%20food&image_size=landscape_16_9" alt="清蒸武昌鱼">
+        <h3>清蒸武昌鱼｜湖北菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>武昌鱼1条（约500g）</li>
+            <li>姜葱、蒸鱼豉油、料酒</li>
+            <li>红椒丝、热油</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鱼处理干净，两面划几刀</li>
+            <li>鱼身上铺姜丝和葱段</li>
+            <li>水开上汽蒸10分钟</li>
+            <li>倒掉腥水，淋蒸鱼豉油</li>
+            <li>铺葱丝红椒丝，浇热油激香</li>
+        </ol>
+        <div class="tip">技巧：蒸鱼时间要掌握好，宁短勿长</div>
+    </div>
+
+    <div class="card" data-cx="江西">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=jiangxi%20braised%20pork%20belly%20hongshao%20rou%20chinese%20food&image_size=landscape_16_9" alt="南昌拌粉">
+        <h3>南昌拌粉｜江西菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>米粉200g</li>
+            <li>萝卜干、花生米、葱花</li>
+            <li>辣椒油、酱油、醋</li>
+            <li>蒜末、香油、盐</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>米粉煮熟，过冷水沥干</li>
+            <li>花生米炸熟，萝卜干切碎</li>
+            <li>碗中调汁：辣椒油+酱油+醋+蒜末+盐</li>
+            <li>米粉放入碗中，加调料拌匀</li>
+            <li>撒花生米、萝卜干和葱花</li>
+        </ol>
+        <div class="tip">技巧：米粉不要煮太烂，要有嚼劲</div>
+    </div>
+
+    <div class="card" data-cx="江西">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=jiangxi%20spicy%20fried%20chicken%20ganzhou%20chinese%20food&image_size=landscape_16_9" alt="赣南小炒鱼">
+        <h3>赣南小炒鱼｜江西菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>草鱼1条</li>
+            <li>干辣椒、姜蒜、料酒</li>
+            <li>酱油、醋、糖</li>
+            <li>淀粉、葱花</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>鱼切块，用料酒盐腌制10分钟</li>
+            <li>裹淀粉炸至金黄</li>
+            <li>炒香姜蒜干辣椒</li>
+            <li>加鱼块翻炒，放酱油醋糖调味</li>
+            <li>撒葱花出锅</li>
+        </ol>
+        <div class="tip">技巧：外酥里嫩，酸辣开胃</div>
+    </div>
+
+    <div class="card" data-cx="广西">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=guangxi%20rice%20noodles%20beef%20soup%20chinese%20food&image_size=landscape_16_9" alt="螺蛳粉">
+        <h3>螺蛳粉｜广西菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>米粉200g</li>
+            <li>螺蛳汤料包</li>
+            <li>酸笋、腐竹、花生</li>
+            <li>酸豆角、木耳、青菜</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>米粉泡软后煮熟</li>
+            <li>螺蛳汤料加热</li>
+            <li>酸笋、木耳、酸豆角炒香</li>
+            <li>米粉装碗，浇上螺蛳汤</li>
+            <li>加腐竹、花生、青菜</li>
+        </ol>
+        <div class="tip">技巧：酸笋要炒过才香，汤要够辣够鲜</div>
+    </div>
+
+    <div class="card" data-cx="广西">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=guangxi%20braised%20duck%20with%20taro%20chinese%20food&image_size=landscape_16_9" alt="荔浦芋扣肉">
+        <h3>荔浦芋扣肉｜广西菜</h3>
+        <span class="collect" onclick="coll(this)">收藏</span>
+        <div class="title">食材</div>
+        <ul>
+            <li>五花肉500g</li>
+            <li>荔浦芋头1个</li>
+            <li>生抽、老抽、料酒</li>
+            <li>八角、桂皮、冰糖</li>
+        </ul>
+        <div class="title">做法</div>
+        <ol>
+            <li>五花肉煮至八成熟，抹老抽上色</li>
+            <li>炸至表皮金黄</li>
+            <li>芋头切厚片炸熟</li>
+            <li>肉片和芋头片相间码入碗中</li>
+            <li>加调料蒸1小时，倒扣装盘</li>
+        </ol>
+        <div class="tip">技巧：芋头要选粉糯的荔浦芋</div>
+    </div>
+</div>
+
+<div class="tab" id="t5">
+    <div class="card">
+        <h3>四季饮食指南</h3>
+        <div class="tag">
+            <span class="on" onclick="seasonFilter(this,'all')">全部</span>
+            <span onclick="seasonFilter(this,'春')">春季</span>
+            <span onclick="seasonFilter(this,'夏')">夏季</span>
+            <span onclick="seasonFilter(this,'秋')">秋季</span>
+            <span onclick="seasonFilter(this,'冬')">冬季</span>
+        </div>
+    </div>
+
+    <div class="card" data-season="春">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=spring%20bamboo%20shoots%20chinese%20fresh%20vegetables%20food&image_size=landscape_16_9" alt="春季时令">
+        <h3>🌱 春季时令美食</h3>
+        <div class="title">特色食材</div>
+        <ul>
+            <li>春笋 - 鲜嫩爽口，清热化痰</li>
+            <li>香椿 - 独特清香，健脾开胃</li>
+            <li>荠菜 - 营养丰富，清肝明目</li>
+            <li>韭菜 - 温补肝肾，助阳散寒</li>
+            <li>豌豆苗 - 清脆鲜嫩，富含维生素</li>
+            <li>草莓 - 春季第一果，酸甜可口</li>
+            <li>樱桃 - 补铁养颜，益气补血</li>
+        </ul>
+        <div class="title">推荐菜品</div>
+        <ul>
+            <li>油焖春笋 - 鲜嫩入味，春季必吃</li>
+            <li>香椿炒蛋 - 香气扑鼻，家常美味</li>
+            <li>荠菜饺子 - 清香鲜美，时令馅料</li>
+            <li>韭菜盒子 - 外酥里嫩，早餐首选</li>
+            <li>豌豆苗炒鸡蛋 - 清爽可口，营养均衡</li>
+        </ul>
+        <div class="season">春季养生：养肝护肝，清淡饮食，多吃绿色蔬菜</div>
+    </div>
+
+    <div class="card" data-season="夏">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=summer%20seafood%20lobster%20crab%20fresh%20Chinese%20food&image_size=landscape_16_9" alt="夏季时令">
+        <h3>☀️ 夏季时令美食</h3>
+        <div class="title">特色食材</div>
+        <ul>
+            <li>小龙虾 - 麻辣鲜香，夏季夜宵之王</li>
+            <li>扇贝 - 肉质鲜嫩，补锌佳品</li>
+            <li>花蛤 - 鲜美多汁，滋阴明目</li>
+            <li>皮皮虾 - 膏肥味美，营养丰富</li>
+            <li>西瓜 - 解暑圣品，补水消渴</li>
+            <li>杨梅 - 酸甜开胃，生津止渴</li>
+            <li>荔枝 - 南国佳果，养血健脾</li>
+            <li>黄瓜 - 清热利水，脆嫩爽口</li>
+            <li>冬瓜 - 解暑利湿，减肥佳品</li>
+        </ul>
+        <div class="title">推荐菜品</div>
+        <ul>
+            <li>麻辣小龙虾 - 夏日必备，越吃越香</li>
+            <li>蒜蓉粉丝蒸扇贝 - 鲜香浓郁，海鲜经典</li>
+            <li>辣炒花蛤 - 下酒神器，夜市必点</li>
+            <li>盐水皮皮虾 - 原汁原味，鲜甜可口</li>
+            <li>冬瓜薏米排骨汤 - 清热利湿，夏季汤品</li>
+        </ul>
+        <div class="season">夏季养生：清热解暑，清淡饮食，多吃瓜类</div>
+    </div>
+
+    <div class="card" data-season="秋">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=autumn%20hairy%20crab%20chinese%20delicacy%20seasonal%20food&image_size=landscape_16_9" alt="秋季时令">
+        <h3>🍂 秋季时令美食</h3>
+        <div class="title">特色食材</div>
+        <ul>
+            <li>大闸蟹 - 膏肥黄满，秋季珍馐</li>
+            <li>桂花 - 香气宜人，入糕入茶</li>
+            <li>柿子 - 润肺生津，清热止血</li>
+            <li>柚子 - 酸甜多汁，化痰止咳</li>
+            <li>石榴 - 籽多饱满，抗氧化佳</li>
+            <li>板栗 - 健脾养胃，补肾强筋</li>
+            <li>山药 - 补益脾胃，滋阴润肺</li>
+            <li>莲藕 - 清热生津，健脾开胃</li>
+        </ul>
+        <div class="title">推荐菜品</div>
+        <ul>
+            <li>清蒸大闸蟹 - 原汁原味，蟹中极品</li>
+            <li>桂花糕 - 香甜软糯，桂香四溢</li>
+            <li>糖炒栗子 - 香甜可口，街头美味</li>
+            <li>桂花糯米藕 - 软糯香甜，经典甜品</li>
+            <li>山药排骨汤 - 滋补润燥，秋季养生</li>
+        </ul>
+        <div class="season">秋季养生：滋阴润燥，白色食物为主，少食辛辣</div>
+    </div>
+
+    <div class="card" data-season="冬">
+        <img class="pic" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=winter%20mutton%20hot%20pot%20chinese%20warm%20food&image_size=landscape_16_9" alt="冬季时令">
+        <h3>❄️ 冬季时令美食</h3>
+        <div class="title">特色食材</div>
+        <ul>
+            <li>羊肉 - 温中补虚，驱寒暖身</li>
+            <li>白萝卜 - 下气消食，润肺化痰</li>
+            <li>大白菜 - 清热解毒，通利肠胃</li>
+            <li>柑橘 - 生津止渴，润肺化痰</li>
+            <li>橙子 - 酸甜多汁，富含维C</li>
+            <li>荸荠 - 清热泻火，凉血解毒</li>
+            <li>香菇 - 增强免疫，滋补佳品</li>
+            <li>木耳 - 润肺补脑，养血驻颜</li>
+        </ul>
+        <div class="title">推荐菜品</div>
+        <ul>
+            <li>羊肉火锅 - 冬日暖身，滋补佳品</li>
+            <li>萝卜炖排骨 - 清淡鲜美，润肺止咳</li>
+            <li>白菜炖豆腐 - 家常温暖，老少皆宜</li>
+            <li>小鸡炖蘑菇 - 东北经典，暖身暖胃</li>
+            <li>冰糖炖雪梨 - 润肺止咳，冬季甜品</li>
+        </ul>
+        <div class="season">冬季养生：温补脾肾，多吃温热食物，适当进补</div>
+    </div>
+</div>
+
+<div class="tab" id="t6">
+    <div class="card">
+        <h3>我的收藏</h3>
+        <div id="collList">暂无收藏</div>
+    </div>
+</div>
+
+<div class="tab" id="t7">
+    <div class="login-box" id="loginForm">
+        <h3>管理员登录</h3>
+        <input class="input" id="user" placeholder="账号">
+        <input class="input" type="password" id="pwd" placeholder="密码">
+        <button class="btn" onclick="adminLogin()">登录</button>
+        <p>默认：admin / 123456</p>
+    </div>
+    <div class="card" id="admin" style="display:none;">
+        <h3>管理后台</h3>
+        <p>菜品管理、用户收藏、主题设置</p>
+        <button class="btn" onclick="logout()">退出登录</button>
+    </div>
+</div>
+
+<div class="modal" id="m1">
+    <div class="modal-c">
+        <div class="close" onclick="closeM()">&times;</div>
+        <div id="mTitle"></div>
+        <div id="mContent"></div>
+    </div>
+</div>
+
+<div class="modal" id="m2">
+    <div class="modal-c">
+        <div class="close" onclick="closeM()">&times;</div>
+        <h3>选择主题</h3>
+        <div class="tag">
+            <span onclick="setTheme('')">蓝色</span>
+            <span onclick="setTheme('theme-r')">红色</span>
+            <span onclick="setTheme('theme-g')">绿色</span>
+            <span onclick="setTheme('theme-p')">紫色</span>
+        </div>
+    </div>
+</div>
+
+<script>
+let tabNow=0;
+let collList=JSON.parse(localStorage.getItem('coll'))||[];
+function go(i){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('show'));
+    document.querySelectorAll('.nav li').forEach(n=>n.classList.remove('on'));
+    document.getElementById('t'+i).classList.add('show');
+    document.querySelectorAll('.nav li')[i].classList.add('on');
+    tabNow=i;
+    if(i==6)renderColl();
+}
+function ftag(el,t){
+    document.querySelectorAll('.tag span').forEach(s=>s.classList.remove('on'));
+    el.classList.add('on');
+    document.querySelectorAll('[data-type]').forEach(c=>{
+        if(t=='all'||c.dataset.type.includes(t))c.style.display='block';
+        else c.style.display='none';
+    });
+}
+function cx(el,t){
+    document.querySelectorAll('#t4 .tag span').forEach(s=>s.classList.remove('on'));
+    el.classList.add('on');
+    document.querySelectorAll('[data-cx]').forEach(c=>{
+        if(t=='all'||c.dataset.cx==t)c.style.display='block';
+        else c.style.display='none';
+    });
+}
+function shake(){
+    const arr=['番茄炒蛋','蒜蓉油麦菜','麻婆豆腐','白切鸡','辣椒炒肉'];
+    const r=arr[Math.floor(Math.random()*arr.length)];
+    alert('摇一摇推荐：'+r);
+}
+function mat(name){
+    const obj={
+        '番茄':'挑沙瓤、果蒂绿、手感弹，不软不硬',
+        '鸡蛋':'蛋壳干净、摇晃无声、沉水新鲜',
+        '油麦菜':'叶绿挺实、无黄叶、手感重更嫩',
+        '大蒜':'饱满干燥、不发芽、无霉点'
+    };
+    document.getElementById('mTitle').innerText=name+'挑选技巧';
+    document.getElementById('mContent').innerText=obj[name]||'暂无信息';
+    document.getElementById('m1').classList.add('show');
+}
+function coll(el){
+    const t=el.parentElement.querySelector('h3').innerText;
+    const i=collList.indexOf(t);
+    if(i>-1){collList.splice(i,1);el.classList.remove('on');el.innerText='收藏'}
+    else{collList.push(t);el.classList.add('on');el.innerText='已收藏'}
+    localStorage.setItem('coll',JSON.stringify(collList));
+}
+function renderColl(){
+    const d=document.getElementById('collList');
+    if(collList.length==0){d.innerHTML='暂无收藏';return;}
+    d.innerHTML='';
+    collList.forEach(c=>{
+        const div=document.createElement('div');
+        div.className='card';
+        div.innerHTML='<h3>'+c+'</h3>';
+        d.appendChild(div);
+    });
+}
+function showTheme(){document.getElementById('m2').classList.add('show');}
+function setTheme(c){
+    document.body.className=c;
+    closeM();
+}
+function showLogin(){document.getElementById('m1').classList.add('show');}
+function adminLogin(){
+    const u=document.getElementById('user').value;
+    const p=document.getElementById('pwd').value;
+    if(u=='admin'&&p=='123456'){
+        document.getElementById('loginForm').style.display='none';
+        document.getElementById('admin').style.display='block';
+        closeM();
+    }else alert('账号密码错误');
+}
+function logout(){
+    document.getElementById('admin').style.display='none';
+    document.getElementById('loginForm').style.display='block';
+    document.getElementById('user').value='';
+    document.getElementById('pwd').value='';
+}
+function closeM(){
+    document.querySelectorAll('.modal').forEach(m=>m.classList.remove('show'));
+}
+function seasonFilter(el,t){
+    document.querySelectorAll('#t5 .tag span').forEach(s=>s.classList.remove('on'));
+    el.classList.add('on');
+    document.querySelectorAll('[data-season]').forEach(c=>{
+        if(t=='all'||c.dataset.season==t)c.style.display='block';
+        else c.style.display='none';
+    });
+}
+
+const recipes = {
+    breakfast: [
+        {name:'小米粥', cal:180, protein:5, carb:38, fat:1, desc:'养胃安神，早餐首选', ingredients:'小米50g（约1小碗）、清水500ml（5倍量）、红枣3-4颗（去核）、枸杞10粒、冰糖10g', steps:'1. 小米淘洗2-3遍，去除杂质和浮尘，沥干水分\n2. 锅中加500ml清水，大火烧开（约3-4分钟）\n3. 倒入小米，转小火保持微沸状态熬煮20分钟\n4. 期间每隔5分钟用勺子搅拌一次，防止粘锅\n5. 加入红枣和枸杞，继续熬煮10分钟\n6. 最后加入冰糖调味，关火后焖5分钟让粥更浓稠', tip:'煮粥秘诀：水和米的比例掌握在10:1最佳；小火慢熬才能出米油；出锅前滴几滴香油更香'},
+        {name:'鸡蛋灌饼', cal:320, protein:12, carb:45, fat:12, desc:'外酥里嫩，能量满满', ingredients:'中筋面粉200g、温水120ml（60-70℃）、盐2g、食用油15ml、鸡蛋2个、生菜2片、甜面酱15g、蒜蓉辣酱10g、葱花少许', steps:'1. 面粉+盐混合，边搅拌边加入温水，揉成光滑面团，盖上湿布醒发30分钟\n2. 醒好的面团分成4份，每份擀成直径约15cm的薄饼\n3. 平底锅刷薄油，中小火加热，放入饼胚\n4. 待一面定型（约1分钟）后翻面，继续煎至两面微黄\n5. 在饼的表面戳一个小口，将打散的鸡蛋液缓缓灌入饼内\n6. 轻轻按压饼面，让蛋液均匀分布，煎至蛋液凝固\n7. 再次翻面，煎至两面金黄酥脆\n8. 抹上甜面酱和蒜蓉辣酱，夹入生菜和葱花即可', tip:'面团醒发要到位，饼才会柔软有层次；灌蛋时动作要轻，避免蛋液溢出'},
+        {name:'豆浆油条', cal:380, protein:10, carb:52, fat:16, desc:'经典搭配，豆香浓郁', ingredients:'黄豆100g、清水1500ml、油条2根（约100g）、白糖适量', steps:'1. 黄豆挑去杂质，用清水浸泡6-8小时（夏天放冰箱）\n2. 泡好的黄豆洗净，加入1500ml清水，用破壁机或豆浆机打成细腻的豆浆\n3. 打好的豆浆用滤网过滤掉豆渣\n4. 过滤后的豆浆倒入锅中，大火烧开后转小火继续煮5分钟（生豆浆有毒，必须煮透）\n5. 另起一锅，倒入适量食用油，油温烧至180℃（油条放入能迅速浮起）\n6. 放入油条，炸至金黄酥脆捞出控油\n7. 豆浆根据口味加糖调味，搭配油条食用', tip:'豆浆煮透后要撇去浮沫；油条炸好后放在吸油纸上吸去多余油脂'},
+        {name:'包子馒头', cal:280, protein:8, carb:55, fat:3, desc:'暄软可口，易消化', ingredients:'中筋面粉500g、干酵母5g、白糖10g、温水250ml（30-35℃）、泡打粉2g（可选）', steps:'1. 面粉+酵母+白糖+泡打粉混合均匀\n2. 加入温水，揉成光滑的面团（约5分钟）\n3. 面团放在温暖处（28-30℃）发酵至2倍大（约1小时）\n4. 发酵好的面团取出排气，揉匀后搓成长条\n5. 切成每个约50g的小剂子，滚圆后放在蒸屉上\n6. 盖上湿布醒发15分钟（二次醒发很重要）\n7. 蒸锅中加水烧开，放入蒸屉，中火蒸15分钟\n8. 关火后焖3分钟再开盖，防止回缩', tip:'发酵温度控制在28-30℃最佳；二次醒发要到位，馒头才会松软'},
+        {name:'燕麦牛奶', cal:220, protein:9, carb:35, fat:6, desc:'膳食纤维丰富', ingredients:'即食燕麦片50g、纯牛奶250ml、核桃2颗（掰碎）、杏仁5颗、蜂蜜10g（可选）', steps:'1. 燕麦片放入碗中备用\n2. 牛奶倒入小锅中，小火加热至微沸（约60℃，不要煮沸以免破坏营养）\n3. 热牛奶倒入燕麦片中，搅拌均匀\n4. 静置5分钟，让燕麦片充分吸收牛奶变软\n5. 撒上碎核桃和杏仁\n6. 喜欢甜的可以加入蜂蜜调味', tip:'用即食燕麦更方便；牛奶不要煮沸，保持60℃左右最佳；搭配坚果增加口感和营养'},
+        {name:'馄饨水饺', cal:300, protein:12, carb:48, fat:8, desc:'皮薄馅大，汤鲜味美', ingredients:'馄饨皮50张、猪前腿肉末200g、葱姜末各10g、生抽15ml、料酒10ml、盐3g、香油5ml、清汤500ml、紫菜5g、虾皮5g、葱花适量', steps:'1. 肉末中加入葱姜末、生抽、料酒、盐，朝一个方向搅拌至上劲\n2. 加入香油拌匀，静置10分钟让馅料入味\n3. 取一张馄饨皮，放入适量馅料在中间\n4. 对角折叠成三角形，然后将两个角捏合在一起\n5. 锅中加足量清水烧开，下馄饨煮至全部浮起（约3分钟）\n6. 碗中放入紫菜、虾皮和葱花，冲入滚烫的清汤\n7. 将煮好的馄饨捞入碗中即可', tip:'馅料要朝一个方向搅拌上劲才鲜嫩；馄饨皮边缘要沾水才能粘牢'},
+        {name:'肠粉', cal:250, protein:8, carb:42, fat:7, desc:'广东特色，爽滑细腻', ingredients:'肠粉专用粉100g、清水200ml、虾仁50g（切丁）、青菜叶3片（切丝）、生抽20ml、蚝油10ml、香油5ml、蒜末5g', steps:'1. 肠粉粉倒入碗中，加入清水搅拌成无颗粒的粉浆（静置10分钟）\n2. 调酱汁：生抽+蚝油+蒜末+少量清水混合均匀\n3. 蒸锅加水大火烧开，放入肠粉专用蒸盘，刷一层薄油\n4. 倒入适量粉浆（约3mm厚），撒上虾仁丁和青菜丝\n5. 盖上锅盖蒸2-3分钟，直到粉浆变透明\n6. 用刮板将肠粉卷起来，放入盘中\n7. 淋上酱汁和香油即可', tip:'粉浆厚度要均匀；蒸的时间不要太长，否则口感不滑'},
+        {name:'煎饼果子', cal:350, protein:11, carb:50, fat:14, desc:'天津风味，酥脆香浓', ingredients:'中筋面粉200g、绿豆面50g、清水300ml、鸡蛋2个、油条1根、薄脆1片、葱花10g、熟芝麻5g、甜面酱15g、蒜蓉辣酱10g', steps:'1. 面粉+绿豆面混合，加入清水调成稀面糊（能流动的状态）\n2. 平底锅刷薄油，中小火加热\n3. 倒入适量面糊，用刮板迅速摊成薄圆饼\n4. 打一个鸡蛋在饼中央，用刮板将鸡蛋液均匀摊开\n5. 撒上葱花和熟芝麻\n6. 待鸡蛋凝固后翻面，刷上甜面酱和蒜蓉辣酱\n7. 放上油条和薄脆，将饼卷起来即可', tip:'面糊要稀，摊得越薄越好；火候要控制好，避免煎糊'},
+        {name:'肉夹馍', cal:380, protein:14, carb:48, fat:16, desc:'陕西经典，饼酥肉香', ingredients:'带皮五花肉500g、白吉馍4个、姜片10g、葱段15g、八角2颗、桂皮1小块、香叶2片、冰糖20g、生抽30ml、老抽10ml、料酒20ml', steps:'1. 五花肉切成2cm见方的块，冷水下锅焯水，撇去浮沫\n2. 锅中放少量油，小火炒冰糖至融化呈枣红色\n3. 加入肉块翻炒上色\n4. 加入葱姜和香料炒出香味\n5. 加入生抽、老抽、料酒翻炒均匀\n6. 加入清水没过肉块，大火烧开后转小火炖60分钟\n7. 炖好的肉捞出，用刀剁碎，加入少量炖肉汤汁拌匀\n8. 白吉馍放入烤箱或平底锅加热至外皮酥脆\n9. 切开馍，夹入肉碎即可', tip:'炖肉要选带皮五花肉，肥一点更香；白吉馍要烤得酥脆才好吃'},
+        {name:'热干面', cal:340, protein:10, carb:55, fat:12, desc:'武汉名吃，芝麻酱香', ingredients:'碱水面200g、纯芝麻酱2大勺（约30g）、生抽15ml、陈醋5ml、辣椒油10ml、葱花10g、萝卜干10g（切丁）、香油5ml', steps:'1. 芝麻酱中加入少量温水，搅拌成细腻的糊状\n2. 锅中加水烧开，放入面条煮至八成熟（约4分钟，比包装说明少煮1分钟）\n3. 捞出面条，沥干水分，倒入香油拌匀防止粘连\n4. 面条放入碗中，加入调好的芝麻酱\n5. 加入生抽、陈醋、辣椒油\n6. 撒上葱花和萝卜干丁\n7. 快速搅拌均匀即可', tip:'面条不要煮太烂，硬一点更劲道；搅拌时要快，防止芝麻酱结块'}
+    ],
+    lunch: [
+        {name:'红烧肉', cal:450, protein:18, carb:25, fat:35, desc:'肥而不腻，入口即化', ingredients:'带皮五花肉500g、姜片15g、葱段20g、八角2颗、桂皮1小块、香叶2片、冰糖30g、生抽30ml、老抽10ml、料酒20ml、清水适量', steps:'1. 五花肉切成3cm见方的块，冷水下锅，加入姜片和料酒焯水，撇去浮沫后捞出沥干\n2. 锅中放少量底油，小火炒冰糖至融化呈枣红色（注意不要炒糊）\n3. 迅速倒入肉块翻炒，让每块肉都均匀上色\n4. 加入葱段、姜片和香料炒出香味\n5. 加入生抽和老抽翻炒均匀\n6. 加入清水没过肉块，大火烧开后转小火慢炖40分钟\n7. 最后开大火收汁，让汤汁浓稠地裹在肉上即可', tip:'选五花肉要肥瘦相间；炒糖色要用小火；炖肉时水量要一次加足，中途不要加水；最后收汁要不停翻炒防止粘锅'},
+        {name:'糖醋里脊', cal:380, protein:20, carb:35, fat:18, desc:'酸甜可口，外酥里嫩', ingredients:'猪里脊肉300g、番茄酱2大勺、白糖20g、白醋15ml、料酒10ml、盐2g、玉米淀粉50g、清水适量、食用油', steps:'1. 里脊肉切成1cm宽、5cm长的条\n2. 加入料酒和盐抓匀，腌制10分钟\n3. 玉米淀粉加少量清水调成糊状，将肉条均匀裹上淀粉糊\n4. 锅中倒油，油温烧至180℃，放入肉条炸至金黄酥脆捞出\n5. 油温升至200℃，将肉条复炸10秒，口感更酥脆\n6. 锅中留少许底油，放入番茄酱、白糖、白醋和少量清水调成酱汁\n7. 酱汁烧开后加入水淀粉勾芡\n8. 倒入炸好的肉条快速翻炒，让每块肉都裹上酱汁即可', tip:'肉要炸两遍才酥脆；糖醋汁的比例是关键，糖和醋的比例约为1.5:1'},
+        {name:'宫保鸡丁', cal:320, protein:25, carb:18, fat:16, desc:'川味经典，花生酥脆', ingredients:'鸡胸肉250g、花生米50g、干辣椒10个、花椒1小勺、姜片5g、蒜片5g、葱段10g、生抽15ml、料酒10ml、白糖5g、盐2g、玉米淀粉10g、食用油', steps:'1. 鸡胸肉切成1.5cm见方的丁，加入料酒、盐和淀粉抓匀腌制10分钟\n2. 花生米用温水浸泡10分钟，剥去红衣，晾干水分\n3. 锅中倒油，小火炒花生米至微黄酥脆，捞出备用\n4. 锅中留底油，小火炒干辣椒和花椒至出香味\n5. 加入姜片、蒜片和葱段炒香\n6. 倒入腌好的鸡丁，大火快速滑炒至变色\n7. 加入生抽和白糖调味\n8. 最后倒入花生米翻炒均匀即可', tip:'花生米最后放才能保持酥脆；干辣椒和花椒要用小火慢炒，避免炒糊'},
+        {name:'麻婆豆腐', cal:280, protein:15, carb:12, fat:18, desc:'麻辣鲜香，下饭神器', ingredients:'嫩豆腐300g、猪五花肉末100g、郫县豆瓣酱2大勺、花椒粉1小勺、姜蒜末各5g、葱花10g、生抽10ml、料酒5ml、水淀粉适量、食用油', steps:'1. 豆腐切成2cm见方的小块，放入加了盐的沸水中焯水2分钟，捞出沥干\n2. 锅中倒油，中火炒肉末至变色出油\n3. 加入郫县豆瓣酱炒出红油\n4. 加入姜蒜末炒香\n5. 加入少量清水或高汤烧开\n6. 放入豆腐，轻轻推动，煮5分钟\n7. 加入生抽调味，用水淀粉勾芡\n8. 出锅后撒上花椒粉和葱花即可', tip:'用嫩豆腐更滑嫩；郫县豆瓣酱本身很咸，调味要注意；花椒粉要最后撒才有麻香'},
+        {name:'回锅肉', cal:350, protein:16, carb:15, fat:26, desc:'香而不腻，肥瘦相间', ingredients:'带皮五花肉300g、青蒜苗2根、郫县豆瓣酱1大勺、甜面酱1小勺、姜片5g、蒜片5g、料酒10ml、白糖2g、食用油', steps:'1. 五花肉冷水下锅，加入姜片和料酒，煮至八成熟（约15分钟）\n2. 捞出五花肉，放凉后切成2mm厚的薄片\n3. 青蒜苗洗净切成段\n4. 锅中不放油，直接放入肉片，小火煸炒至出油微卷\n5. 加入郫县豆瓣酱炒出红油\n6. 加入甜面酱和白糖翻炒均匀\n7. 放入蒜片和青蒜苗段，大火翻炒1分钟即可', tip:'肉片稍冷冻更好切；煸炒肉片时要小火慢煸，逼出多余油脂；青蒜苗要最后放保持脆嫩'},
+        {name:'清蒸鲈鱼', cal:220, protein:28, carb:5, fat:10, desc:'原汁原味，鲜嫩可口', ingredients:'鲈鱼1条（约500g）、姜丝10g、葱丝15g、蒸鱼豉油20ml、食用油20ml、料酒10ml、盐2g', steps:'1. 鲈鱼处理干净，在鱼身两侧各划3-4刀，方便入味\n2. 用料酒和盐涂抹鱼身内外，腌制10分钟\n3. 蒸鱼盘底部铺几片姜片，将鱼放在上面\n4. 水开上汽后放入蒸锅，大火蒸8-10分钟（根据鱼的大小调整时间）\n5. 取出蒸鱼盘，倒掉盘中的腥水\n6. 鱼身上铺新鲜的葱姜丝\n7. 淋上蒸鱼豉油\n8. 另起锅烧滚烫的热油，浇在葱姜丝上激出香味即可', tip:'时间别太长否则肉老；蒸鱼豉油要选品质好的；最后浇热油是关键，能激出葱姜的香味'},
+        {name:'白切鸡', cal:250, protein:30, carb:3, fat:12, desc:'皮脆肉嫩，原香四溢', ingredients:'三黄鸡1只（约1000g）、姜片15g、葱段20g、沙姜酱油适量、盐5g、料酒15ml、冰水一盆', steps:'1. 鸡处理干净，去掉内脏和杂质\n2. 锅中加足量清水，放入姜片、葱段和料酒\n3. 大火烧开后转小火，保持微沸状态\n4. 将鸡放入锅中，确保完全浸没\n5. 小火浸煮15分钟，期间将鸡翻面2-3次\n6. 关火后继续焖10分钟\n7. 捞出鸡，立即放入冰水中浸泡10分钟\n8. 取出沥干水分，斩件装盘，搭配沙姜酱油蘸食', tip:'冰水让皮脆肉嫩；煮鸡时不要用大火滚煮，保持微沸状态；焖的时间很重要，能让鸡肉更入味'},
+        {name:'番茄炒蛋', cal:280, protein:18, carb:15, fat:16, desc:'家常百搭，老少皆宜', ingredients:'番茄2个（约300g）、鸡蛋3个、葱花10g、盐3g、白糖5g、食用油20ml', steps:'1. 鸡蛋打入碗中，加入少许盐打散\n2. 番茄洗净切块\n3. 锅中倒油，油热后倒入蛋液，炒至凝固盛出备用\n4. 锅中留底油，放入番茄块，中火炒软出汁\n5. 加入盐和白糖调味\n6. 倒入炒好的鸡蛋翻炒均匀\n7. 撒上葱花即可出锅', tip:'番茄要炒出汁才好吃；鸡蛋不要炒太老，保持嫩度；白糖能中和番茄的酸味'},
+        {name:'鱼香肉丝', cal:310, protein:20, carb:22, fat:16, desc:'酸甜微辣，开胃下饭', ingredients:'猪里脊肉200g、胡萝卜50g、水发木耳50g、泡椒20g、姜蒜末各5g、葱花10g、生抽15ml、醋10ml、白糖10g、料酒10ml、盐2g、玉米淀粉10g、食用油', steps:'1. 里脊肉切成细丝，加入料酒、盐和淀粉抓匀腌制10分钟\n2. 胡萝卜和木耳切成丝\n3. 调鱼香汁：生抽+醋+白糖+淀粉+少量清水混合均匀\n4. 锅中倒油，滑炒肉丝至变色盛出\n5. 锅中留底油，炒香泡椒和姜蒜末\n6. 加入胡萝卜丝和木耳丝炒软\n7. 倒回肉丝翻炒\n8. 淋入调好的鱼香汁，翻炒至汤汁浓稠即可', tip:'鱼香汁比例要掌握好（生抽:醋:糖≈1.5:1:1）；泡椒要炒出香味；配菜不要炒太烂'},
+        {name:'农家小炒肉', cal:340, protein:22, carb:12, fat:24, desc:'湘味浓郁，香辣过瘾', ingredients:'带皮五花肉200g、青椒3个、小米辣3个、姜蒜末各5g、葱花10g、生抽15ml、料酒10ml、盐2g、食用油', steps:'1. 五花肉切成薄片\n2. 青椒切成块，小米辣切圈\n3. 锅中不放油，直接放入肉片，小火煸炒至出油\n4. 加入料酒去腥\n5. 加入姜蒜末和小米辣爆香\n6. 放入青椒块翻炒至变软\n7. 加入生抽和盐调味\n8. 撒上葱花出锅', tip:'青椒要选辣一点的才够味；煸炒肉片时要把油脂逼出来才香；青椒不要炒太久保持脆嫩'}
+    ],
+    dinner: [
+        {name:'羊肉火锅', cal:420, protein:30, carb:20, fat:28, desc:'冬日暖身，滋补佳品', ingredients:'肥羊卷200g、火锅底料1块（约150g）、大白菜100g、豆腐100g、粉丝50g、香菇50g、芝麻酱2大勺、生抽10ml、香油5ml、葱花10g', steps:'1. 锅中加入2000ml清水，放入火锅底料\n2. 大火烧开后转小火煮10分钟，让底料充分融化\n3. 准备蘸料：芝麻酱+生抽+香油+葱花混合均匀\n4. 汤底沸腾后，先涮羊肉片（涮3-5秒即可）\n5. 羊肉涮完后加入大白菜、豆腐、香菇和粉丝\n6. 煮3-5分钟，直到蔬菜变软即可食用', tip:'羊肉涮3-5秒即可，别煮老；火锅底料本身很咸，不需要额外加盐；搭配蔬菜吃更健康'},
+        {name:'萝卜炖排骨', cal:320, protein:25, carb:15, fat:18, desc:'清淡鲜美，润肺止咳', ingredients:'猪肋排500g、白萝卜1个（约400g）、姜片15g、葱段20g、料酒15ml、盐5g、白胡椒粉少许', steps:'1. 排骨剁成3cm长的段，冷水下锅，加入姜片和料酒焯水\n2. 撇去浮沫后捞出排骨，用清水冲洗干净\n3. 锅中加入足量清水，放入排骨、姜片和葱段\n4. 大火烧开后转小火慢炖40分钟\n5. 白萝卜切成滚刀块，加入锅中继续炖20分钟\n6. 最后加入盐和白胡椒粉调味即可', tip:'萝卜别太早放，否则煮烂；炖排骨时水量要一次加足；出锅前可以加少量枸杞增加营养'},
+        {name:'清蒸武昌鱼', cal:240, protein:32, carb:6, fat:10, desc:'湖北名菜，鲜嫩清甜', ingredients:'武昌鱼1条（约500g）、姜丝10g、葱丝15g、蒸鱼豉油20ml、食用油20ml、料酒10ml、盐2g', steps:'1. 武昌鱼处理干净，在鱼身两侧各划3-4刀\n2. 用料酒和盐涂抹鱼身内外，腌制10分钟\n3. 蒸鱼盘底部铺几片姜片，将鱼放在上面\n4. 水开上汽后放入蒸锅，大火蒸10分钟\n5. 取出蒸鱼盘，倒掉盘中的腥水\n6. 鱼身上铺新鲜的葱姜丝\n7. 淋上蒸鱼豉油\n8. 另起锅烧滚烫的热油，浇在葱姜丝上激出香味即可', tip:'选鲜活的武昌鱼更鲜美；蒸的时间要掌握好，1斤左右的鱼蒸10分钟刚好；最后浇热油是关键'},
+        {name:'蒜蓉虾', cal:260, protein:30, carb:8, fat:12, desc:'蒜香浓郁，虾肉弹牙', ingredients:'鲜活基围虾500g、蒜末30g、生抽20ml、蚝油10ml、料酒10ml、盐2g、白糖5g、葱花10g、食用油30ml', steps:'1. 虾剪去虾须和虾脚，从背部剪开，去除虾线\n2. 用料酒和盐抓匀腌制10分钟\n3. 锅中倒油，中火炒蒜末至微黄出香味\n4. 加入生抽、蚝油和白糖调味\n5. 放入虾翻炒至变色（约2分钟）\n6. 盖上锅盖焖1分钟\n7. 撒上葱花出锅即可', tip:'虾不要煮太久，否则肉质老；蒜末要炒香但不要炒糊；可以用黄油代替食用油更香'},
+        {name:'冬瓜排骨汤', cal:280, protein:22, carb:12, fat:16, desc:'清热利湿，夏季必备', ingredients:'猪肋排300g、冬瓜200g、姜片10g、葱段15g、料酒10ml、盐3g、白胡椒粉少许', steps:'1. 排骨剁成段，冷水下锅焯水，撇去浮沫捞出\n2. 锅中加入清水、排骨、姜片和葱段，大火烧开\n3. 转小火炖30分钟\n4. 冬瓜切成2cm厚的块，加入锅中\n5. 继续炖15分钟，直到冬瓜变透明\n6. 加入盐和白胡椒粉调味即可', tip:'冬瓜煮透明即可，别太烂；排骨汤炖好后再放盐更健康；夏季喝这汤清热解暑'},
+        {name:'酸汤鱼', cal:290, protein:28, carb:14, fat:14, desc:'贵州特色，酸辣开胃', ingredients:'草鱼1条（约600g）、酸汤料1包（约150g）、番茄1个、豆芽100g、姜片10g、蒜片10g、香菜10g、盐适量', steps:'1. 草鱼处理干净，切成3cm厚的片，用少量盐腌制10分钟\n2. 番茄切块，豆芽洗净\n3. 锅中倒油，炒香姜片和蒜片\n4. 加入酸汤料炒出香味\n5. 加入番茄块炒软出汁\n6. 加入清水或高汤烧开\n7. 放入豆芽煮2分钟\n8. 放入鱼片，煮至变色后再煮1分钟即可\n9. 出锅后撒上香菜', tip:'酸汤料可以买现成的贵州酸汤料；鱼片不要煮太久，否则肉老；可以加少量豆腐增加营养'},
+        {name:'东坡肉', cal:420, protein:16, carb:28, fat:32, desc:'苏菜经典，酥糯入味', ingredients:'带皮五花肉500g、绍兴黄酒200ml、冰糖30g、姜片15g、葱段20g、生抽20ml、老抽10ml', steps:'1. 五花肉切成4cm见方的块，冷水下锅焯水，撇去浮沫捞出\n2. 砂锅底部垫上姜片和葱段，将肉块皮朝下放入砂锅中\n3. 加入黄酒、冰糖、生抽和老抽\n4. 大火烧开后转小火焖煮1小时\n5. 将肉块翻面，皮朝上，继续焖煮30分钟\n6. 最后开大火收汁，让汤汁浓稠即可', tip:'用绍兴黄酒更香；炖肉时不要加水，用黄酒代替；最后收汁要不停翻动防止粘锅'},
+        {name:'松鼠鳜鱼', cal:310, protein:28, carb:22, fat:14, desc:'苏帮名菜，酸甜酥脆', ingredients:'鳜鱼1条（约600g）、番茄酱2大勺、白糖20g、白醋15ml、料酒10ml、盐3g、玉米淀粉适量、松子10g、食用油', steps:'1. 鳜鱼处理干净，去除鱼骨，在鱼肉上切十字花刀\n2. 用料酒和盐涂抹鱼肉，腌制10分钟\n3. 鱼肉均匀裹上玉米淀粉\n4. 锅中倒油，油温烧至180℃，放入鱼炸至金黄酥脆\n5. 捞出鱼控油，放入盘中\n6. 锅中留底油，放入番茄酱、白糖、白醋和少量清水调成酱汁\n7. 酱汁烧开后用水淀粉勾芡\n8. 酱汁淋在鱼身上，撒上松子装饰即可', tip:'刀工要精细，鱼才能炸出松鼠尾巴的形状；炸鱼时油温要够；糖醋汁的比例要掌握好'},
+        {name:'红烧茄子', cal:180, protein:6, carb:22, fat:8, desc:'素菜经典，下饭好菜', ingredients:'长茄子2个（约300g）、蒜末10g、生抽15ml、蚝油10ml、盐2g、白糖5g、葱花10g、食用油', steps:'1. 茄子切成粗条，撒上盐腌制10分钟\n2. 挤干茄子条的水分\n3. 锅中倒油，中小火炒茄子条至变软\n4. 加入蒜末爆香\n5. 加入生抽、蚝油、盐和白糖调味\n6. 翻炒均匀后焖2分钟\n7. 撒上葱花出锅', tip:'茄子腌制后挤干水分更省油；炒茄子时要用小火慢炒；可以加少量肉末一起炒更香'},
+        {name:'地三鲜', cal:220, protein:8, carb:28, fat:10, desc:'东北名菜，咸香可口', ingredients:'土豆1个（约200g）、茄子1个（约150g）、青椒1个、蒜末10g、生抽15ml、盐2g、白糖3g、食用油', steps:'1. 土豆切成滚刀块，茄子切成滚刀块，青椒切成块\n2. 锅中倒油，油温烧至170℃，放入土豆块炸至金黄捞出\n3. 放入茄子块炸至变软捞出\n4. 锅中留底油，炒香蒜末\n5. 加入青椒块炒软\n6. 加入土豆块和茄子块翻炒\n7. 加入生抽、盐和白糖调味\n8. 翻炒均匀即可出锅', tip:'食材分开处理，避免出水；土豆和茄子可以少放油煎代替炸更健康；调味要清淡，突出食材本身的味道'}
+    ]
+};
+
+const weekMenu = [
+    {day:'周一', breakfast:'小米粥+鸡蛋', lunch:'红烧肉+米饭', dinner:'萝卜炖排骨+馒头', cal:1850, tip:'周一开始补铁日'},
+    {day:'周二', breakfast:'豆浆油条', lunch:'宫保鸡丁+米饭', dinner:'酸汤鱼+米饭', cal:1780, tip:'高蛋白日'},
+    {day:'周三', breakfast:'燕麦牛奶+全麦面包', lunch:'清蒸鲈鱼+蔬菜', dinner:'羊肉火锅', cal:1920, tip:'补铁补蛋白'},
+    {day:'周四', breakfast:'馄饨水饺', lunch:'麻婆豆腐+米饭', dinner:'蒜蓉虾+凉拌菜', cal:1750, tip:'减脂日'},
+    {day:'周五', breakfast:'鸡蛋灌饼', lunch:'糖醋里脊+米饭', dinner:'东坡肉+蔬菜', cal:1950, tip:'犒劳日'},
+    {day:'周六', breakfast:'肠粉', lunch:'白切鸡+米饭', dinner:'地三鲜+米饭', cal:1800, tip:'粤菜日'},
+    {day:'周日', breakfast:'煎饼果子', lunch:'回锅肉+米饭', dinner:'冬瓜排骨汤+馒头', cal:1820, tip:'周日轻食'}
+];
+
+function generatePlan(type='均衡'){
+    const types = {
+        '轻奢': {breakfast:3, lunch:0.8, dinner:1.2},
+        '均衡': {breakfast:1, lunch:1, dinner:1},
+        '素食': {breakfast:1.2, lunch:1.5, dinner:1.5},
+        '减脂': {breakfast:0.8, lunch:1, dinner:0.7},
+        '高蛋白': {breakfast:1, lunch:1.3, dinner:1.4}
+    };
+    const multipliers = types[type] || types['均衡'];
+    const now = new Date();
+    document.getElementById('planDate').innerHTML = `<p style="margin:10px 0;">${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ${['周日','周一','周二','周三','周四','周五','周六'][now.getDay()]}</p>`;
+    const b = recipes.breakfast[Math.floor(Math.random()*recipes.breakfast.length)];
+    const l = recipes.lunch[Math.floor(Math.random()*recipes.lunch.length)];
+    const d = recipes.dinner[Math.floor(Math.random()*recipes.dinner.length)];
+    document.getElementById('breakfastContent').innerHTML = `
+        <h4 style="color:#ff9800">${b.name}</h4>
+        <p>${b.desc}</p>
+        <div style="margin:8px 0;padding:8px;background:#fff3e0;border-radius:8px;">
+            <span>热量 ${Math.round(b.cal*multipliers.breakfast)}kcal</span> | 
+            <span>蛋白 ${Math.round(b.protein*multipliers.breakfast)}g</span> | 
+            <span>碳水 ${Math.round(b.carb*multipliers.breakfast)}g</span>
+        </div>
+        <div style="margin-top:10px;">
+            <button onclick="showDetail('${b.name}','breakfast')" style="padding:6px 12px;background:#ff9800;color:#fff;border:none;border-radius:6px;font-size:13px;margin-right:5px;">📖 查看做法</button>
+            <button onclick="toggleFavorite('${b.name}')" style="padding:6px 12px;background:#e91e63;color:#fff;border:none;border-radius:6px;font-size:13px;margin-right:5px;">❤️ 收藏</button>
+            <button onclick="shareDish('${b.name}')" style="padding:6px 12px;background:#4caf50;color:#fff;border:none;border-radius:6px;font-size:13px;">📤 分享</button>
+        </div>
+    `;
+    document.getElementById('lunchContent').innerHTML = `
+        <h4 style="color:#4caf50">${l.name}</h4>
+        <p>${l.desc}</p>
+        <div style="margin:8px 0;padding:8px;background:#e8f5e9;border-radius:8px;">
+            <span>热量 ${Math.round(l.cal*multipliers.lunch)}kcal</span> | 
+            <span>蛋白 ${Math.round(l.protein*multipliers.lunch)}g</span> | 
+            <span>碳水 ${Math.round(l.carb*multipliers.lunch)}g</span>
+        </div>
+        <div style="margin-top:10px;">
+            <button onclick="showDetail('${l.name}','lunch')" style="padding:6px 12px;background:#4caf50;color:#fff;border:none;border-radius:6px;font-size:13px;margin-right:5px;">📖 查看做法</button>
+            <button onclick="toggleFavorite('${l.name}')" style="padding:6px 12px;background:#e91e63;color:#fff;border:none;border-radius:6px;font-size:13px;margin-right:5px;">❤️ 收藏</button>
+            <button onclick="shareDish('${l.name}')" style="padding:6px 12px;background:#4caf50;color:#fff;border:none;border-radius:6px;font-size:13px;">📤 分享</button>
+        </div>
+    `;
+    document.getElementById('dinnerContent').innerHTML = `
+        <h4 style="color:#2196f3">${d.name}</h4>
+        <p>${d.desc}</p>
+        <div style="margin:8px 0;padding:8px;background:#e3f2fd;border-radius:8px;">
+            <span>热量 ${Math.round(d.cal*multipliers.dinner)}kcal</span> | 
+            <span>蛋白 ${Math.round(d.protein*multipliers.dinner)}g</span> | 
+            <span>碳水 ${Math.round(d.carb*multipliers.dinner)}g</span>
+        </div>
+        <div style="margin-top:10px;">
+            <button onclick="showDetail('${d.name}','dinner')" style="padding:6px 12px;background:#2196f3;color:#fff;border:none;border-radius:6px;font-size:13px;margin-right:5px;">📖 查看做法</button>
+            <button onclick="toggleFavorite('${d.name}')" style="padding:6px 12px;background:#e91e63;color:#fff;border:none;border-radius:6px;font-size:13px;margin-right:5px;">❤️ 收藏</button>
+            <button onclick="shareDish('${d.name}')" style="padding:6px 12px;background:#4caf50;color:#fff;border:none;border-radius:6px;font-size:13px;">📤 分享</button>
+        </div>
+    `;
+    const totalCal = Math.round(b.cal*multipliers.breakfast + l.cal*multipliers.lunch + d.cal*multipliers.dinner);
+    const totalPro = Math.round((b.protein*multipliers.breakfast + l.protein*multipliers.lunch + d.protein*multipliers.dinner)*10)/10;
+    const totalCarb = Math.round((b.carb*multipliers.breakfast + l.carb*multipliers.lunch + d.carb*multipliers.dinner)*10)/10;
+    document.getElementById('nutritionSummary').innerHTML = `
+        <div style="display:flex;justify-content:space-around;text-align:center;">
+            <div><div style="font-size:24px;font-weight:bold;color:#e91e63">${totalCal}</div><div>总热量(kcal)</div></div>
+            <div><div style="font-size:24px;font-weight:bold;color:#4caf50">${totalPro}</div><div>蛋白质(g)</div></div>
+            <div><div style="font-size:24px;font-weight:bold;color:#ff9800">${totalCarb}</div><div>碳水(g)</div></div>
+        </div>
+        <div style="margin-top:10px;padding:8px;background:#fff;border-radius:8px;">
+            <p><strong>早中晚热量分配：</strong>早餐30% | 午餐40% | 晚餐30%</p>
+            <p><strong>营养评价：</strong>${totalPro>60?'✅ 高蛋白搭配':'✅ 均衡营养搭配'}</p>
+        </div>
+    `;
+    let advice = '';
+    if(totalCal<1700) advice='⚠️ 热量略低，建议增加坚果或水果';
+    else if(totalCal>2100) advice='⚠️ 热量略高，建议减少油脂摄入';
+    else advice='✅ 热量摄入合理，三餐定时定量';
+    if(totalPro<50) advice+='\n⚠️ 蛋白质摄入不足，建议增加肉蛋奶';
+    else advice+='\n✅ 蛋白质摄入充足';
+    document.getElementById('nutritionAdvice').innerText=advice;
+}
+
+function searchDish(){
+    const kw = document.getElementById('dishSearch').value.trim().toLowerCase();
+    if(!kw){document.getElementById('searchResults').innerHTML='';return;}
+    const allRecipes = [...recipes.breakfast,...recipes.lunch,...recipes.dinner];
+    const found = allRecipes.filter(r=>r.name.toLowerCase().includes(kw)||r.desc.toLowerCase().includes(kw));
+    if(found.length==0){
+        document.getElementById('searchResults').innerHTML='<p style="color:#999;padding:10px;">未找到相关菜谱，试试其他关键词</p>';
+        return;
+    }
+    let html = '<div style="margin-top:10px;">';
+    found.forEach(r=>{
+        html+=`<div style="padding:10px;border-bottom:1px solid #eee;">
+            <strong>${r.name}</strong> - ${r.desc}<br>
+            <small style="color:#666;">热量${r.cal}kcal | 蛋白${r.protein}g | 碳水${r.carb}g</small>
+        </div>`;
+    });
+    html+='</div>';
+    document.getElementById('searchResults').innerHTML=html;
+}
+
+function onlineSearch(){
+    const kw = document.getElementById('dishSearch').value.trim();
+    if(!kw){alert('请输入搜索关键词');return;}
+    const resultDiv = document.getElementById('onlineSearchResults');
+    resultDiv.style.display='block';
+    resultDiv.innerHTML='<p style="padding:15px;color:#667eea;">🔄 正在搜索 "'+kw+'" 的菜谱...</p>';
+    
+    const apiKey = '请在这里填写您的聚合数据API Key'; // 请到 https://www.juhe.cn/register 注册申请
+    const apiUrl = `http://apis.juhe.cn/scook/query?key=${apiKey}&menu=${encodeURIComponent(kw)}&pn=1&rn=10`;
+    
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            if(data.resultcode == 200 && data.result && data.result.data){
+                let html = `<div style="background:#f8f9fa;border-radius:10px;padding:15px;margin-top:10px;">
+                    <h4 style="color:#667eea;margin-bottom:10px;">🌐 在线搜索结果（共${data.result.data.length}道菜谱）</h4>`;
+                data.result.data.forEach(item => {
+                    const steps = item.process ? item.process.map(p=>p.p).join('<br>') : '暂无详细步骤';
+                    html += `<div style="background:#fff;padding:12px;margin:8px 0;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,0.1);">
+                        <strong style="color:#333;">${item.name || '未知菜名'}</strong>
+                        <p style="margin:5px 0;font-size:13px;color:#666;">食材：${item.burden || '详见步骤'}</p>
+                        <details>
+                            <summary style="cursor:pointer;color:#667eea;">查看做法</summary>
+                            <p style="margin-top:8px;font-size:13px;line-height:1.6;">${steps}</p>
+                        </details>
+                    </div>`;
+                });
+                html += '</div>';
+                resultDiv.innerHTML = html;
+            } else {
+                resultDiv.innerHTML = `<p style="color:#999;padding:15px;">😢 未找到相关菜谱，请尝试其他关键词<br><small>提示：请先申请聚合数据API Key并填入代码中</small></p>`;
+            }
+        })
+        .catch(err => {
+            resultDiv.innerHTML = `<p style="color:#e91e63;padding:15px;">⚠️ 网络请求失败，请检查网络连接<br><small>错误信息：${err.message}</small></p>`;
+        });
+}
+
+function handleSearch(e){
+    if(e.key==='Enter'){
+        const kw = document.getElementById('searchInput').value.trim();
+        if(kw){
+            go(4);
+            document.getElementById('dishSearch').value=kw;
+            searchDish();
+        }
+    }
+}
+
+function showWeekPlan(dayIndex){
+    document.querySelectorAll('#t0 .tag span').forEach(s=>s.classList.remove('on'));
+    event.target.classList.add('on');
+    const plan = weekMenu[dayIndex];
+    document.getElementById('weekPlanContent').innerHTML = `
+        <div style="padding:15px;background:#f8f9fa;border-radius:10px;margin-top:10px;">
+            <h4 style="color:#667eea">${plan.day} 健康食谱</h4>
+            <div style="margin:10px 0;">
+                <p><strong>🌅 早餐：</strong>${plan.breakfast}</p>
+                <p><strong>☀️ 午餐：</strong>${plan.lunch}</p>
+                <p><strong>🌙 晚餐：</strong>${plan.dinner}</p>
+            </div>
+            <div style="background:#e8f5e9;padding:10px;border-radius:8px;">
+                <p>📊 今日总热量：${plan.cal}kcal</p>
+                <p>💡 ${plan.tip}</p>
+            </div>
+        </div>
+    `;
+}
+
+function showDetail(dishName, type){
+    const allRecipes = [...recipes.breakfast, ...recipes.lunch, ...recipes.dinner];
+    const recipe = allRecipes.find(r => r.name === dishName);
+    if(!recipe){
+        alert('未找到该菜谱详情');
+        return;
+    }
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal show';
+    modal.innerHTML = `
+        <div class="modal-c">
+            <div class="close" onclick="this.parentElement.parentElement.remove()">&times;</div>
+            <h3 style="color:#667eea;">📖 ${recipe.name}</h3>
+            <p style="color:#666;margin:10px 0;">${recipe.desc}</p>
+            <div style="margin:15px 0;">
+                <h4 style="color:#ff9800;">🥬 食材</h4>
+                <p style="background:#fff3e0;padding:10px;border-radius:8px;">${recipe.ingredients || '暂无食材信息'}</p>
+            </div>
+            <div style="margin:15px 0;">
+                <h4 style="color:#4caf50;">👩🍳 做法步骤</h4>
+                <ol style="background:#e8f5e9;padding:15px;border-radius:8px;">
+                    ${recipe.steps.split('\n').map((step, i) => `<li>${step}</li>`).join('')}
+                </ol>
+            </div>
+            <div style="margin:15px 0;">
+                <h4 style="color:#2196f3;">💡 烹饪技巧</h4>
+                <p style="background:#e3f2fd;padding:10px;border-radius:8px;">${recipe.tip || '暂无技巧提示'}</p>
+            </div>
+            <button class="btn" onclick="this.parentElement.parentElement.remove()">关闭</button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function toggleFavorite(dishName){
+    let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    const index = favorites.indexOf(dishName);
+    if(index > -1){
+        favorites.splice(index, 1);
+        alert(`已取消收藏「${dishName}」`);
+    } else {
+        favorites.push(dishName);
+        alert(`已收藏「${dishName}」，可在"我的收藏"中查看`);
+    }
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+}
+
+function shareDish(dishName){
+    const shareText = `我在菜谱应用中发现了一道美味：${dishName}，快来一起学习吧！`;
+    
+    if(navigator.share){
+        navigator.share({
+            title: dishName,
+            text: shareText,
+            url: window.location.href
+        }).then(() => {
+            alert('分享成功！');
+        }).catch(() => {
+            copyToClipboard(shareText);
+        });
+    } else {
+        copyToClipboard(shareText);
+    }
+}
+
+function copyToClipboard(text){
+    const temp = document.createElement('textarea');
+    temp.value = text;
+    document.body.appendChild(temp);
+    temp.select();
+    document.execCommand('copy');
+    document.body.removeChild(temp);
+    alert('已复制到剪贴板，可以分享给朋友啦！');
+}
+</script>
+</body>
+</html>
